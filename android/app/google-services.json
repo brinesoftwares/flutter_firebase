@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "389334513266",
+    "project_id": "chumon-ebe18",
+    "storage_bucket": "chumon-ebe18.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:389334513266:android:3b24b1ef3028c52e0c74eb",
+        "android_client_info": {
+          "package_name": "com.flutterfirebase.lokesh"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "389334513266-ba8gb9bkdeb7ufjdqk02h3po0noc93pg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA48hg3sBWxbDPMnn8cwm8GaNh1wBg9Z_c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "389334513266-ba8gb9bkdeb7ufjdqk02h3po0noc93pg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
