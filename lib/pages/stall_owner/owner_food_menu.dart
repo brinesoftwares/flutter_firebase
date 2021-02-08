@@ -11,6 +11,7 @@ import 'package:flutter_starter/pages/stall_owner/edit_food.dart';
 import 'package:flutter_starter/services/api_services/fireDB.dart';
 import 'package:flutter_starter/styles/widgets_style.dart';
 import 'package:flutter_starter/utils/form_validator.dart';
+import 'package:flutter_starter/widgets/loading_widget.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,57 +27,31 @@ class _OwnerFoodMenuState extends State<OwnerFoodMenu> {
   bool image_selected = false;
   String food_name = "";
   String food_price = "";
-  String shop_image = "";
-   // List<FoodModel> foods = [
+  String shop_image;
+  bool loading = true;
+  // List<FoodModel> foods = [
   //   FoodModel(food: "Burger", price: "43.2"),
   //   FoodModel(food: "Sandwich", price: "4.5"),
   // ];
-  List foods = [
-    {
-      "food": "Burger",
-      "price": 5.6,
-      "describtion": "This is the veg burger",
-      "imag":
-          "https://media.cntraveler.com/photos/58f8eefed3e4d55528e77660/16:9/w_2560%2Cc_limit/GettyImages-588348686.jpg"
-    },
-    {
-      "food": "Pizza",
-      "price": 2.8,
-      "describtion": "This is the veg Pizza",
-      "imag": "https://i.ytimg.com/vi/EK-zTchrRvA/hqdefault.jpg"
-    },
-    {
-      "food": "Pepsi",
-      "price": 1.8,
-      "describtion": "This is the pepsi",
-      "imag":
-          "https://thumbs.dreamstime.com/z/food-stall-street-yellow-red-seat-putting-enjoying-open-air-meal-31363276.jpg"
-    },
-    {
-      "food": "Pizza",
-      "price": 2.8,
-      "describtion": "This is the veg Pizza",
-      "imag": "https://i.ytimg.com/vi/EK-zTchrRvA/hqdefault.jpg"
-    },
-  ];
+  List foods = [];
 
   File _image;
   final picker = ImagePicker();
 
   Future gotoAdd() async {
     Map details = await Get.to(AddFood());
-    if(details != null)
-    setState(() {
-      foods.add(details);
-    });
+    if (details != null)
+      setState(() {
+        foods.add(details);
+      });
   }
 
-  Future gotoEdit(index,_arg) async {
-    Map details = await Get.to(EditFood(),arguments: _arg);
-    if(details != null)
-    setState(() {
-      foods[index] = details;
-    });
+  Future gotoEdit(index, _arg) async {
+    Map details = await Get.to(EditFood(), arguments: _arg);
+    if (details != null)
+      setState(() {
+        foods[index] = details;
+      });
   }
 
   Future getImage() async {
@@ -93,29 +68,31 @@ class _OwnerFoodMenuState extends State<OwnerFoodMenu> {
     Database.uploadShopImage(File(pickedFile.path));
   }
 
-getShopImage() async{
-var image =await Database.shopImage();
+  getShopImage() async {
+    var image = await Database.shopImage();
     print(image);
     setState(() {
       shop_image = image["shop_image"];
     });
-}
-
-  @override
-  void initState(){
-    getShopImage();
-    super.initState();
-    // fetchfoods();
   }
 
-  // void fetchfoods() async {
-  //   await ApiService().fetchfoods().then((value) {
-  //     setState(() {
-  //       _loading = false;
-  //       foods = value;
-  //     });
-  //   });
-  // }
+  @override
+  void initState() {
+    getShopImage();
+    fetchfoods();
+    super.initState();
+  }
+
+  void fetchfoods() async {
+    // Get.dialog(LoadingWidget(), barrierDismissible: false);
+    await Database.fetchOwnerFood().then((value) {
+      print(value);
+      setState(() {
+        loading = false;
+        foods = value;
+      });
+    });
+  }
 
   // void addfoods() async {
   //   try {
@@ -192,8 +169,6 @@ var image =await Database.shopImage();
   //   });
   // }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -221,7 +196,10 @@ var image =await Database.shopImage();
                   image: DecorationImage(
                       image: image_selected
                           ? FileImage(_image)
-                          : NetworkImage(shop_image),
+                          : shop_image != null
+                              ? NetworkImage(shop_image)
+                              : new AssetImage(
+                                  'assets/images/app_icon/icon.jpg'),
                       fit: BoxFit.fill),
                 ),
               ),
@@ -300,11 +278,22 @@ var image =await Database.shopImage();
             ),
             foods.length == 0
                 ? Center(
-                    child: Text(
-                      "No foods",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                    ),
+                    child: loading
+                        ? SizedBox(
+                            height: 30,
+                            child: SpinKitThreeBounce(
+                              color: Colors.green,
+                              size: 25.0,
+                            ),
+                          )
+                        : Container(
+                            height: 100,
+                            child: Text(
+                              "No foods available",
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w700),
+                            ),
+                          ),
                   )
                 : Padding(
                     padding: const EdgeInsets.all(2.0),
@@ -345,8 +334,11 @@ var image =await Database.shopImage();
                                                 height: 80,
                                                 fadeOutDuration:
                                                     Duration(milliseconds: 2),
-                                                image: NetworkImage(
-                                                    foods[i]["imag"]),
+                                                image: foods[i]["imag"] != null
+                                                    ? NetworkImage(
+                                                        foods[i]["imag"])
+                                                    : new AssetImage(
+                                                        'assets/images/app_icon/icon.jpg'),
                                                 placeholder: AssetImage(
                                                     'assets/images/app_icon/icon.jpg')),
                                           ),
@@ -449,7 +441,7 @@ var image =await Database.shopImage();
                                                             height: 5,
                                                           ),
                                                           Text(
-                                                            "add_on01,add_on2",
+                                                            foods[i]["add_ons"],
                                                             maxLines: 4,
                                                             overflow:
                                                                 TextOverflow
@@ -485,7 +477,8 @@ var image =await Database.shopImage();
                                                                   Colors.blue,
                                                             ),
                                                             onPressed: () {
-                                                              gotoEdit(i, foods[i]);
+                                                              gotoEdit(
+                                                                  i, foods[i]);
                                                               // Get.dialog(
                                                               //     addFoodWidget(
                                                               //         foods[i][
@@ -553,7 +546,7 @@ var image =await Database.shopImage();
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           // Get.dialog(addFoodWidget("", "", true, 0), barrierDismissible: false);
-           gotoAdd();
+          gotoAdd();
         },
         backgroundColor: Color(0xff701504),
         icon: Icon(Icons.food_bank),
@@ -768,8 +761,15 @@ var image =await Database.shopImage();
                       child: RaisedButton(
                         onPressed: () {
                           Get.back();
-                          setState(() {
-                            foods.removeAt(index);
+                          Get.dialog(LoadingWidget(),
+                              barrierDismissible: false);
+                          Database.deleteOwnerFood(foods[index]["product_id"])
+                              .then((value) {
+                            if (value) {
+                              setState(() {
+                                foods.removeAt(index);
+                              });
+                            }
                           });
                           // Get.dialog(LoadingWidget(), barrierDismissible: false);
                           // deteteStaff(id, index);

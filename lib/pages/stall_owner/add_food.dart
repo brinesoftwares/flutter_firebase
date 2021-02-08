@@ -2,10 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:io' as Io;
 
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_starter/services/api_services/fireDB.dart';
 import 'package:flutter_starter/styles/widgets_style.dart';
 import 'package:flutter_starter/utils/form_validator.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -20,6 +23,8 @@ class _AddFoodState extends State<AddFood> {
   String food, price, desc, add_ons, base64;
   File imageFile;
   bool picked = false;
+  String _image;
+  static final box = GetStorage();
 
   _getFromGallery(bool camera) async {
     PickedFile pickedFile = await ImagePicker().getImage(
@@ -41,16 +46,25 @@ class _AddFoodState extends State<AddFood> {
     );
     if (croppedImage != null) {
       imageFile = croppedImage;
-      final bytes = Io.File(imageFile.path).readAsBytesSync();
-      String img64 = base64Encode(bytes);
-
-      print(img64);
-
+      uploadImage(File(imageFile.path));
       setState(() {
-        base64 = img64;
         picked = true;
       });
     }
+  }
+
+  Future<void> uploadImage(File file) async {
+    StorageReference storageReference;
+    storageReference = FirebaseStorage.instance.ref().child(
+        "food_img/${box.read("user")["id_no"]}" + DateTime.now().toString());
+    final StorageUploadTask uploadTask = storageReference.putFile(file);
+    final StorageTaskSnapshot downloadUrl = (await uploadTask.onComplete);
+    final String url = (await downloadUrl.ref.getDownloadURL());
+    print("URL is $url");
+    setState(() {
+      _image = url;
+    });
+    // updateshopImage({"shop_image" : url});
   }
 
   @override
@@ -219,90 +233,108 @@ class _AddFoodState extends State<AddFood> {
   Widget FormUI() {
     return Padding(
       padding: const EdgeInsets.all(15.0),
-      child: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: new TextFormField(
-                // initialValue: name,
-                decoration: new InputDecoration(
-                    prefixIcon: Icon(
-                      Icons.fastfood,
-                      color: Color(0xFFC4290E),
-                    ),
-                    hintText: 'Food Name',
-                    contentPadding: new EdgeInsets.all(12),
-                    border: customBorder,
-                    focusedBorder: customFocusedBorder,
-                    enabledBorder: customEnabledBorder),
-                keyboardType: TextInputType.text,
-                validator: validateName,
-                onSaved: (String val) {
-                  food = val;
-                }),
+      child: GestureDetector(
+        onTap: () {
+          if (!picked)
+            Get.snackbar("Upload Food Image First", "Then fields will enable",
+                colorText: Colors.white,
+                barBlur: 100,
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.red,
+                dismissDirection: SnackDismissDirection.HORIZONTAL,
+                borderRadius: 8,
+                margin: EdgeInsets.all(15),
+                isDismissible: true);
+        },
+        child: AbsorbPointer(
+          absorbing: !picked,
+          child: Column(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: new TextFormField(
+                    // initialValue: name,
+                    decoration: new InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.fastfood,
+                          color: Color(0xFFC4290E),
+                        ),
+                        hintText: 'Food Name',
+                        contentPadding: new EdgeInsets.all(12),
+                        border: customBorder,
+                        focusedBorder: customFocusedBorder,
+                        enabledBorder: customEnabledBorder),
+                    keyboardType: TextInputType.text,
+                    validator: validateName,
+                    onSaved: (String val) {
+                      food = val;
+                    }),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: new TextFormField(
+                    // initialValue: price,
+                    decoration: new InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.money,
+                          color: Color(0xFFC4290E),
+                        ),
+                        hintText: 'Price',
+                        contentPadding: new EdgeInsets.all(12),
+                        border: customBorder,
+                        focusedBorder: customFocusedBorder,
+                        enabledBorder: customEnabledBorder),
+                    keyboardType: TextInputType.number,
+                    validator: (value) => validateRequired(value, "Price"),
+                    onSaved: (String val) {
+                      price = val;
+                    }),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: new TextFormField(
+                    // initialValue: price,
+                    maxLines: 3,
+                    decoration: new InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.info,
+                          color: Color(0xFFC4290E),
+                        ),
+                        hintText: 'Description',
+                        contentPadding: new EdgeInsets.all(12),
+                        border: customBorder,
+                        focusedBorder: customFocusedBorder,
+                        enabledBorder: customEnabledBorder),
+                    // keyboardType: TextInputType.number,
+                    validator: (value) =>
+                        validateRequired(value, "Description"),
+                    onSaved: (String val) {
+                      desc = val;
+                    }),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: new TextFormField(
+                    // initialValue: price,
+                    decoration: new InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.add_box,
+                          color: Color(0xFFC4290E),
+                        ),
+                        hintText: 'Add ons',
+                        contentPadding: new EdgeInsets.all(12),
+                        border: customBorder,
+                        focusedBorder: customFocusedBorder,
+                        enabledBorder: customEnabledBorder),
+                    // keyboardType: TextInputType.number,
+                    validator: (value) => validateRequired(value, "Add ons"),
+                    onSaved: (String val) {
+                      add_ons = val;
+                    }),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: new TextFormField(
-                // initialValue: price,
-                decoration: new InputDecoration(
-                    prefixIcon: Icon(
-                      Icons.money,
-                      color: Color(0xFFC4290E),
-                    ),
-                    hintText: 'Price',
-                    contentPadding: new EdgeInsets.all(12),
-                    border: customBorder,
-                    focusedBorder: customFocusedBorder,
-                    enabledBorder: customEnabledBorder),
-                keyboardType: TextInputType.number,
-                validator: (value) => validateRequired(value, "Price"),
-                onSaved: (String val) {
-                  price = val;
-                }),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: new TextFormField(
-                // initialValue: price,
-                maxLines: 3,
-                decoration: new InputDecoration(
-                    prefixIcon: Icon(
-                      Icons.info,
-                      color: Color(0xFFC4290E),
-                    ),
-                    hintText: 'Description',
-                    contentPadding: new EdgeInsets.all(12),
-                    border: customBorder,
-                    focusedBorder: customFocusedBorder,
-                    enabledBorder: customEnabledBorder),
-                // keyboardType: TextInputType.number,
-                validator: (value) => validateRequired(value, "Description"),
-                onSaved: (String val) {
-                  desc = val;
-                }),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: new TextFormField(
-                // initialValue: price,
-                decoration: new InputDecoration(
-                    prefixIcon: Icon(
-                      Icons.add_box,
-                      color: Color(0xFFC4290E),
-                    ),
-                    hintText: 'Add ons',
-                    contentPadding: new EdgeInsets.all(12),
-                    border: customBorder,
-                    focusedBorder: customFocusedBorder,
-                    enabledBorder: customEnabledBorder),
-                // keyboardType: TextInputType.number,
-                validator: (value) => validateRequired(value, "Add ons"),
-                onSaved: (String val) {
-                  add_ons = val;
-                }),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -312,14 +344,26 @@ class _AddFoodState extends State<AddFood> {
       if (_key.currentState.validate()) {
         _key.currentState.save();
 
-        Get.back(result:  {
-      "food": food,
-      "price": double.parse(price),
-      "describtion": desc,
-      "imag":
-          "https://media.cntraveler.com/photos/58f8eefed3e4d55528e77660/16:9/w_2560%2Cc_limit/GettyImages-588348686.jpg"
-    });
+        var food_data = {
+          "owner_id" : box.read("my_id"),
+          "food": food,
+          "price": double.parse(price),
+          "describtion": desc,
+          "imag": _image,
+          "add_ons": add_ons
+        };
 
+        Database.addFood(food_data);
+
+        //   Get.back(result:  {
+        // "food": food,
+        // "price": double.parse(price),
+        // "describtion": desc,
+        // "imag": _image,
+        // "add_ons" : add_ons
+        // });
+
+        print(food_data);
       } else {
         setState(() {
           _validate = true;
