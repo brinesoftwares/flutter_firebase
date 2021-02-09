@@ -83,6 +83,7 @@ class _UserLoginState extends State<UserLogin> {
           borderRadius: BorderRadius.all(Radius.circular(10.0)),
         ),
         child: TextFormField(
+          keyboardType: TextInputType.emailAddress,
           validator: validateEmail,
           onSaved: (data){
             email = data;
@@ -114,6 +115,7 @@ class _UserLoginState extends State<UserLogin> {
           borderRadius: BorderRadius.all(Radius.circular(10.0)),
         ),
         child: TextFormField(
+          obscureText: true,
           validator: validatePass,
           onSaved: (data){
             password = data;

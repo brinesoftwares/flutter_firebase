@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_starter/pages/login.dart';
 import 'package:flutter_starter/pages/user/food_menu.dart';
+import 'package:flutter_starter/services/api_services/fireDB.dart';
 import 'package:get/get.dart';
 
 final String _placeholder = 'assets/images/placeholder.jpeg';
@@ -15,37 +16,37 @@ class StallList extends StatefulWidget {
 
 class _StallListState extends State<StallList> {
   List shops = [
-    {
-      "stall_name": "Stall 1",
-      "stall_img":
-          "https://media.cntraveler.com/photos/58f8eefed3e4d55528e77660/16:9/w_2560%2Cc_limit/GettyImages-588348686.jpg"
-     },
-    {
-      "stall_name": "Stall 2",
-      "stall_img": "https://i.ytimg.com/vi/EK-zTchrRvA/hqdefault.jpg"
-    },
-    {
-      "stall_name": "Stall 3",
-      "stall_img":
-           "https://thumbs.dreamstime.com/z/food-stall-street-yellow-red-seat-putting-enjoying-open-air-meal-31363276.jpg"
-      },
+    // {
+    //   "stall_name": "Stall 1",
+    //   "stall_img":
+    //       "https://media.cntraveler.com/photos/58f8eefed3e4d55528e77660/16:9/w_2560%2Cc_limit/GettyImages-588348686.jpg"
+    //  },
+    // {
+    //   "stall_name": "Stall 2",
+    //   "stall_img": "https://i.ytimg.com/vi/EK-zTchrRvA/hqdefault.jpg"
+    // },
+    // {
+    //   "stall_name": "Stall 3",
+    //   "stall_img":
+    //        "https://thumbs.dreamstime.com/z/food-stall-street-yellow-red-seat-putting-enjoying-open-air-meal-31363276.jpg"
+    //   },
   ];
-  bool _loading = false;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    // fetchShops();
+    fetchShops();
   }
 
-  // void fetchShops() async {
-  //   await ApiService().fetchAllShop().then((value) {
-  //     setState(() {
-  //       _loading = false;
-  //       shops = value;
-  //     });
-  //   });
-  // }
+  void fetchShops() async {
+    await Database.fetchStalls().then((value) {
+      setState(() {
+        _loading = false;
+        shops = value;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +70,7 @@ class _StallListState extends State<StallList> {
           : shops.length == 0
               ? Center(
                   child: Text(
-                    "---",
+                    "No one Stall available",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 )
@@ -97,7 +98,7 @@ class _StallListState extends State<StallList> {
                               width: 2.0,
                             ),
                              image: DecorationImage(
-            image: NetworkImage(shops[i]["stall_img"]),
+            image: NetworkImage(shops[i]["shop_image"]),
             fit:  BoxFit.fill
           ),
                           ),
@@ -116,7 +117,7 @@ class _StallListState extends State<StallList> {
                             Padding(
                               padding: const EdgeInsets.all(5.0),
                               child: Text(
-                                shops[i]["stall_name"],
+                                "${shops[i]['first_name']} ${shops[i]['last_name']}" ,
                                 style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
@@ -134,7 +135,7 @@ class _StallListState extends State<StallList> {
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                   onPressed: () {
-                                    Get.to(FoodMenu(),transition: Transition.downToUp);
+                                    Get.to(FoodMenu(),transition: Transition.downToUp,arguments: shops[i]);
                                   },
                                   child: Text(
                                     "View Menu",

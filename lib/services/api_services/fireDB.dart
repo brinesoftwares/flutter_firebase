@@ -290,6 +290,61 @@ class Database {
    
   }
 
+ static Future fetchStalls() async {
+    try {
+      var data = await _db
+          .collection('owners')
+          .getDocuments();
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+
+      List filter_data = data.documents.map((e) {
+        var temp = e.data;
+        temp["shop_id"] = e.documentID;
+        return temp;
+      }).toList();
+
+      return filter_data;
+    } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+
+      return [];
+    }
+
+  }
+ 
+ static Future fetchFoods(id) async {
+    try {
+      var data = await _db
+          .collection('foods')
+          .where("owner_id", isEqualTo: id)
+          .getDocuments();
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+
+      List filter_data = data.documents.map((e) {
+        var temp = e.data;
+        temp["product_id"] = e.documentID;
+        return temp;
+      }).toList();
+
+      return filter_data;
+    } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+
+      return [];
+    }
+
+  }
+
   // static Future<void> ownerRegister(Map<String, dynamic> task) async {
   //   await _db.collection('owners').document().setData(task).catchError((e) {
   //     print(e);

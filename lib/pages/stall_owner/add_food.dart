@@ -315,22 +315,29 @@ class _AddFoodState extends State<AddFood> {
               Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: new TextFormField(
-                    // initialValue: price,
-                    decoration: new InputDecoration(
-                        prefixIcon: Icon(
-                          Icons.add_box,
-                          color: Color(0xFFC4290E),
-                        ),
-                        hintText: 'Add ons',
-                        contentPadding: new EdgeInsets.all(12),
-                        border: customBorder,
-                        focusedBorder: customFocusedBorder,
-                        enabledBorder: customEnabledBorder),
-                    // keyboardType: TextInputType.number,
-                    validator: (value) => validateRequired(value, "Add ons"),
-                    onSaved: (String val) {
-                      add_ons = val;
-                    }),
+                  // initialValue: price,
+                  maxLines: 3,
+                  decoration: new InputDecoration(
+                      prefixIcon: Icon(
+                        Icons.add_box,
+                        color: Color(0xFFC4290E),
+                      ),
+                      hintText: 'Add ons Ex: Sauce,Onion',
+                      
+                      contentPadding: new EdgeInsets.all(12),
+                      border: customBorder,
+                      focusedBorder: customFocusedBorder,
+                      enabledBorder: customEnabledBorder),
+                  // keyboardType: TextInputType.number,
+                  validator: (value) => validateRequired(value, "Add ons"),
+                  onSaved: (String val) {
+                    add_ons = val;
+                  },
+
+                  onChanged: (data) {
+                    add_ons = data;
+                  },
+                ),
               ),
             ],
           ),
@@ -343,14 +350,17 @@ class _AddFoodState extends State<AddFood> {
     if (picked) {
       if (_key.currentState.validate()) {
         _key.currentState.save();
-
+        String filter_addon = add_ons.trim();
+        if (filter_addon[filter_addon.length - 1] == ",") {
+          filter_addon = filter_addon.substring(0, filter_addon.length - 1);
+        }
         var food_data = {
-          "owner_id" : box.read("my_id"),
+          "owner_id": box.read("my_id"),
           "food": food,
           "price": double.parse(price),
           "describtion": desc,
           "imag": _image,
-          "add_ons": add_ons
+          "add_ons": filter_addon
         };
 
         Database.addFood(food_data);

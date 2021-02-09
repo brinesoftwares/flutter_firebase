@@ -182,6 +182,7 @@ class _UserRegisterState extends State<UserRegister> {
         ),
         child: TextFormField(
           validator: validateEmail,
+          keyboardType: TextInputType.emailAddress,
           decoration: InputDecoration(
             border: InputBorder.none,
             focusedBorder: InputBorder.none,

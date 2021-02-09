@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_starter/pages/user/user_order_success.dart';
+import 'package:flutter_starter/services/api_services/fireDB.dart';
 import 'package:get/get.dart';
 
 class FoodMenu extends StatefulWidget {
@@ -11,28 +12,29 @@ class FoodMenu extends StatefulWidget {
 
 class _FoodMenuState extends State<FoodMenu> {
   List foods = [
-    {
-      "food": "Burger",
-      "price": 5.6,
-      "describtion": "This is the veg burger",
-      "imag":
-          "https://media.cntraveler.com/photos/58f8eefed3e4d55528e77660/16:9/w_2560%2Cc_limit/GettyImages-588348686.jpg"
-    },
-    {
-      "food": "Pizza",
-      "price": 2.8,
-      "describtion": "This is the veg Pizza",
-      "imag": "https://i.ytimg.com/vi/EK-zTchrRvA/hqdefault.jpg"
-    },
-    {
-      "food": "Pepsi",
-      "price": 1.8,
-      "describtion": "This is the pepsi",
-      "imag":
-          "https://thumbs.dreamstime.com/z/food-stall-street-yellow-red-seat-putting-enjoying-open-air-meal-31363276.jpg"
-    },
+    // {
+    //   "food": "Burger",
+    //   "price": 5.6,
+    //   "describtion": "This is the veg burger",
+    //   "imag":
+    //       "https://media.cntraveler.com/photos/58f8eefed3e4d55528e77660/16:9/w_2560%2Cc_limit/GettyImages-588348686.jpg"
+    // },
+    // {
+    //   "food": "Pizza",
+    //   "price": 2.8,
+    //   "describtion": "This is the veg Pizza",
+    //   "imag": "https://i.ytimg.com/vi/EK-zTchrRvA/hqdefault.jpg"
+    // },
+    // {
+    //   "food": "Pepsi",
+    //   "price": 1.8,
+    //   "describtion": "This is the pepsi",
+    //   "imag":
+    //       "https://thumbs.dreamstime.com/z/food-stall-street-yellow-red-seat-putting-enjoying-open-air-meal-31363276.jpg"
+    // },
   ];
-  bool _loading = false;
+  var stall_data;
+  bool _loading = true;
   int selectedRadioTile = 0;
 
   int qty = 1;
@@ -44,17 +46,21 @@ class _FoodMenuState extends State<FoodMenu> {
   @override
   void initState() {
     super.initState();
-    // fetchShops();
+    setState(() {
+      stall_data = Get.arguments;
+    });
+    fetchFoods();
   }
 
-  // void fetchShops() async {
-  //   await ApiService().fetchAllShop().then((value) {
-  //     setState(() {
-  //       _loading = false;
-  //       shops = value;
-  //     });
-  //   });
-  // }
+  void fetchFoods() async {
+    print(stall_data["shop_id"]);
+    await Database.fetchFoods(stall_data["shop_id"]).then((value) {
+      setState(() {
+        _loading = false;
+        foods = value;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +77,7 @@ class _FoodMenuState extends State<FoodMenu> {
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Text(
-              "Stall 2",
+              "${stall_data['first_name']} ${stall_data['last_name']}",
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 16,
@@ -90,371 +96,453 @@ class _FoodMenuState extends State<FoodMenu> {
               //   width: 2.0,
               // ),
               image: DecorationImage(
-                  image: NetworkImage(
-                      "https://i.ytimg.com/vi/EK-zTchrRvA/hqdefault.jpg"),
+                  image: NetworkImage(stall_data['shop_image']),
                   fit: BoxFit.fill),
             ),
           ),
           SizedBox(
             height: 10,
           ),
-          ListView.builder(
-            itemCount: foods.length,
-            physics: ScrollPhysics(),
-            shrinkWrap: true,
-            itemBuilder: (context, i) {
-              return ZoomIn(
-                  delay: Duration(milliseconds: 150 * i),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: (my_cart
-                                .where((element) =>
-                                    element["food"] == foods[i]["food"])
-                                .isNotEmpty)
-                            ? Colors.amber[100]
-                            : Colors.transparent,
-                        borderRadius:
-                            new BorderRadius.all(new Radius.circular(10)),
+          _loading
+              ? Center(
+                  child: SizedBox(
+                    height: 30,
+                    child: SpinKitThreeBounce(
+                      color: Colors.green,
+                      size: 25.0,
+                    ),
+                  ),
+                )
+              : foods.length == 0
+                  ? Center(
+                      child: Text(
+                        "No food available",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w700),
                       ),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 8,
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.all(3.0),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: FadeInImage(
-                                      fit: BoxFit.cover,
-                                      width: 80,
-                                      height: 80,
-                                      fadeOutDuration:
-                                          Duration(milliseconds: 2),
-                                      image: product_url != null
-                                          ? NetworkImage(foods[i]["imag"])
-                                          : new AssetImage(
-                                              'assets/images/app_icon/icon.jpg'),
-                                      placeholder: AssetImage(
-                                          'assets/images/app_icon/icon.jpg')),
+                    )
+                  : ListView.builder(
+                      itemCount: foods.length,
+                      physics: ScrollPhysics(),
+                      shrinkWrap: true,
+                      itemBuilder: (context, i) {
+                        return ZoomIn(
+                            delay: Duration(milliseconds: 150 * i),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: (my_cart
+                                          .where((element) =>
+                                              element["food"] ==
+                                              foods[i]["food"])
+                                          .isNotEmpty)
+                                      ? Colors.amber[100]
+                                      : Colors.transparent,
+                                  borderRadius: new BorderRadius.all(
+                                      new Radius.circular(10)),
                                 ),
-                              ),
-                              InkWell(
-                                onTap: () {
-                                  if (my_cart
-                                      .where((element) =>
-                                          element["food"] == foods[i]["food"])
-                                      .isEmpty) {
-                                    setState(() {
-                                      my_cart.add(foods[i]);
-                                      my_cart[my_cart.indexWhere((element) =>
-                                          element["food"] ==
-                                          foods[i]["food"])]["qty"] = 1;
-                                    });
-                                  } else {
-                                    setState(() {
-                                      // my_cart.removeAt(my_cart.indexWhere(
-                                      //     (element) =>
-                                      //         element["food"] ==
-                                      //         foods[i]["food"]));
-                                    });
-                                  }
-                                  print(my_cart);
-                                },
-                                child: Container(
-                                    margin: EdgeInsets.only(
-                                      left: 5,
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      height: 8,
                                     ),
-                                    child: Container(
-                                      width: Get.width / 1.55,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            width: Get.width / 2,
-                                            margin: EdgeInsets.only(
-                                                top: 7, bottom: 7),
-                                            child: Column(
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.all(3.0),
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            child: FadeInImage(
+                                                fit: BoxFit.cover,
+                                                width: 80,
+                                                height: 80,
+                                                fadeOutDuration:
+                                                    Duration(milliseconds: 2),
+                                                image: product_url != null
+                                                    ? NetworkImage(
+                                                        foods[i]["imag"])
+                                                    : new AssetImage(
+                                                        'assets/images/app_icon/icon.jpg'),
+                                                placeholder: AssetImage(
+                                                    'assets/images/app_icon/icon.jpg')),
+                                          ),
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            if (my_cart
+                                                .where((element) =>
+                                                    element["food"] ==
+                                                    foods[i]["food"])
+                                                .isEmpty) {
+                                              setState(() {
+                                                my_cart.add(foods[i]);
+                                                my_cart[my_cart.indexWhere(
+                                                        (element) =>
+                                                            element["food"] ==
+                                                            foods[i]["food"])]
+                                                    ["qty"] = 1;
+                                                my_cart[my_cart.indexWhere(
+                                                        (element) =>
+                                                            element["food"] ==
+                                                            foods[i]["food"])]
+                                                    ["user_add_ons"] = "";
+                                              });
+                                            } else {
+                                              setState(() {
+                                                // my_cart.removeAt(my_cart.indexWhere(
+                                                //     (element) =>
+                                                //         element["food"] ==
+                                                //         foods[i]["food"]));
+                                              });
+                                            }
+                                            print(my_cart);
+                                          },
+                                          child: Container(
+                                              margin: EdgeInsets.only(
+                                                left: 5,
+                                              ),
+                                              child: Container(
+                                                width: Get.width / 1.55,
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container(
+                                                      width: Get.width / 2,
+                                                      margin: EdgeInsets.only(
+                                                          top: 7, bottom: 7),
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Container(
+                                                            child: Text(
+                                                              foods[i]["food"],
+                                                              maxLines: 2,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style: TextStyle(
+                                                                  fontSize: 13,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700),
+                                                            ),
+                                                          ),
+                                                          SizedBox(
+                                                            height: 5,
+                                                          ),
+                                                          Text(
+                                                            foods[i]
+                                                                ["describtion"],
+                                                            maxLines: 4,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            style: TextStyle(
+                                                                fontSize: 12,
+                                                                color: Colors
+                                                                    .grey[700]),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 9),
+                                                      child: Text(
+                                                        "RM ${foods[i]["price"]}",
+                                                        style: TextStyle(
+                                                            fontSize: 13,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            color: Colors
+                                                                .brown[700]),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )),
+                                        ),
+                                      ],
+                                    ),
+                                    (my_cart
+                                            .where((element) =>
+                                                element["food"] ==
+                                                foods[i]["food"])
+                                            .isNotEmpty)
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 10),
+                                            child: Row(
                                               mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                                  MainAxisAlignment.spaceAround,
                                               children: [
-                                                Container(
+                                                // DropdownButtonHideUnderline(
+                                                //   child: new DropdownButton<
+                                                //       String>(
+                                                //     hint: Text(
+                                                //       "Add-Ons",
+                                                //       style: TextStyle(
+                                                //           fontSize: 15),
+                                                //     ),
+                                                //     value: my_cart[
+                                                //             my_cart.indexWhere(
+                                                //                 (element) =>
+                                                //                     element[
+                                                //                         "food"] ==
+                                                //                     foods[i][
+                                                //                         "food"])]
+                                                //         ["add_on"],
+                                                //     items: <String>[
+                                                //       'add_on1',
+                                                //       'add_on2',
+                                                //       'add_on3',
+                                                //       'add_on4'
+                                                //     ].map((String value) {
+                                                //       return new DropdownMenuItem<
+                                                //           String>(
+                                                //         value: value,
+                                                //         child: new Text(value),
+                                                //       );
+                                                //     }).toList(),
+                                                //     onChanged: (data) {
+                                                //       print(data);
+                                                //       setState(() {
+                                                //         my_cart[my_cart.indexWhere(
+                                                //                 (element) =>
+                                                //                     element[
+                                                //                         "food"] ==
+                                                //                     foods[i][
+                                                //                         "food"])]
+                                                //             ["add_on"] = data;
+                                                //       });
+                                                //     },
+                                                //   ),
+                                                // ),
+
+                                                FlatButton(
+                                                  onPressed: () {
+                                                    Get.dialog(
+                                                        addOnWidget(
+                                                          my_cart[i]["add_ons"],
+                                                          my_cart[i]
+                                                              ["user_add_ons"],
+                                                        ),
+                                                        barrierDismissible:
+                                                            false);
+                                                  },
                                                   child: Text(
-                                                    foods[i]["food"],
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                                    "Add ons",
                                                     style: TextStyle(
-                                                        fontSize: 13,
-                                                        fontWeight:
-                                                            FontWeight.w700),
+                                                        color: Colors.pink,
+                                                        fontSize: 15),
                                                   ),
                                                 ),
-                                                SizedBox(
-                                                  height: 5,
-                                                ),
-                                                Text(
-                                                  foods[i]["describtion"],
-                                                  maxLines: 4,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.grey[700]),
+
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "Qty",
+                                                      style: TextStyle(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 20,
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: <Widget>[
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            if (my_cart[my_cart.indexWhere(
+                                                                    (element) =>
+                                                                        element[
+                                                                            "food"] ==
+                                                                        foods[i]
+                                                                            [
+                                                                            "food"])]["qty"] >
+                                                                1) {
+                                                              setState(() {
+                                                                my_cart[my_cart.indexWhere(
+                                                                    (element) =>
+                                                                        element[
+                                                                            "food"] ==
+                                                                        foods[i]
+                                                                            [
+                                                                            "food"])]["qty"]--;
+                                                              });
+                                                            } else {
+                                                              setState(() {
+                                                                my_cart.removeAt(my_cart.indexWhere(
+                                                                    (element) =>
+                                                                        element[
+                                                                            "food"] ==
+                                                                        foods[i]
+                                                                            [
+                                                                            "food"]));
+                                                              });
+                                                            }
+                                                          },
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        4),
+                                                            child: Container(
+                                                              width: 25,
+                                                              height: 25,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                border: Border.all(
+                                                                    color: Colors
+                                                                        .pinkAccent),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            4),
+                                                              ),
+                                                              child: Center(
+                                                                child: Text(
+                                                                  "-",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .pinkAccent),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .only(
+                                                                  right: 10,
+                                                                  left: 10),
+                                                          child: Text(
+                                                            my_cart[my_cart.indexWhere(
+                                                                    (element) =>
+                                                                        element[
+                                                                            "food"] ==
+                                                                        foods[i]
+                                                                            [
+                                                                            "food"])]["qty"]
+                                                                .toString(),
+                                                            style: TextStyle(
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600),
+                                                          ),
+                                                        ),
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            setState(() {
+                                                              my_cart[my_cart.indexWhere(
+                                                                  (element) =>
+                                                                      element[
+                                                                          "food"] ==
+                                                                      foods[i][
+                                                                          "food"])]["qty"]++;
+                                                              // qty++;
+                                                            });
+                                                          },
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        4),
+                                                            child: Container(
+                                                              width: 25,
+                                                              height: 25,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                border: Border.all(
+                                                                    color: Colors
+                                                                        .green),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            4),
+                                                              ),
+                                                              child: Center(
+                                                                child: Text(
+                                                                  "+",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .green),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 9),
-                                            child: Text(
-                                              "RM ${foods[i]["price"]}",
-                                              style: TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Colors.brown[700]),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )),
+                                          )
+                                        : Container(),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
-                          (my_cart
-                                  .where((element) =>
-                                      element["food"] == foods[i]["food"])
-                                  .isNotEmpty)
-                              ? Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      DropdownButtonHideUnderline(
-                                        child: new DropdownButton<String>(
-                                          hint: Text(
-                                            "Add-Ons",
-                                            style: TextStyle(fontSize: 15),
-                                          ),
-                                          value: my_cart[my_cart.indexWhere(
-                                              (element) =>
-                                                  element["food"] ==
-                                                  foods[i]["food"])]["add_on"],
-                                          items: <String>[
-                                            'add_on1',
-                                            'add_on2',
-                                            'add_on3',
-                                            'add_on4'
-                                          ].map((String value) {
-                                            return new DropdownMenuItem<String>(
-                                              value: value,
-                                              child: new Text(value),
-                                            );
-                                          }).toList(),
-                                          onChanged: (data) {
-                                            print(data);
-                                            setState(() {
-                                              my_cart[my_cart.indexWhere(
-                                                      (element) =>
-                                                          element["food"] ==
-                                                          foods[i]["food"])]
-                                                  ["add_on"] = data;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "Qty",
-                                            style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          SizedBox(
-                                            width: 20,
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: <Widget>[
-                                              GestureDetector(
-                                                onTap: () {
-                                                  if (my_cart[my_cart.indexWhere(
-                                                              (element) =>
-                                                                  element[
-                                                                      "food"] ==
-                                                                  foods[
-                                                                          i]
-                                                                      ["food"])]
-                                                          ["qty"] >
-                                                      1) {
-                                                    setState(() {
-                                                      my_cart[my_cart.indexWhere(
-                                                              (element) =>
-                                                                  element[
-                                                                      "food"] ==
-                                                                  foods[
-                                                                          i]
-                                                                      ["food"])]
-                                                          ["qty"]--;
-                                                    });
-                                                  } else {
-                                                    setState(() {
-                                                      my_cart.removeAt(
-                                                          my_cart.indexWhere(
-                                                              (element) =>
-                                                                  element[
-                                                                      "food"] ==
-                                                                  foods[i][
-                                                                      "food"]));
-                                                    });
-                                                  }
-                                                },
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(4),
-                                                  child: Container(
-                                                    width: 25,
-                                                    height: 25,
-                                                    decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors
-                                                              .pinkAccent),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                    ),
-                                                    child: Center(
-                                                      child: Text(
-                                                        "-",
-                                                        style: TextStyle(
-                                                            color: Colors
-                                                                .pinkAccent),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 10, left: 10),
-                                                child: Text(
-                                                  my_cart[my_cart.indexWhere(
-                                                              (element) =>
-                                                                  element[
-                                                                      "food"] ==
-                                                                  foods[
-                                                                          i]
-                                                                      ["food"])]
-                                                          ["qty"]
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                                ),
-                                              ),
-                                              GestureDetector(
-                                                onTap: () {
-                                                  setState(() {
-                                                    my_cart[my_cart.indexWhere(
-                                                            (element) =>
-                                                                element[
-                                                                    "food"] ==
-                                                                foods[
-                                                                    i]["food"])]
-                                                        ["qty"]++;
-                                                    // qty++;
-                                                  });
-                                                },
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(4),
-                                                  child: Container(
-                                                    width: 25,
-                                                    height: 25,
-                                                    decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.green),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                    ),
-                                                    child: Center(
-                                                      child: Text(
-                                                        "+",
-                                                        style: TextStyle(
-                                                            color:
-                                                                Colors.green),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Container(),
-                        ],
-                      ),
-                    ),
-                  ));
+                            ));
 
-              //  RadioListTile(
-              //   value: i,
-              //   groupValue: selectedRadioTile,
-              //   title: Text(
-              //     "Food $i",
-              //     maxLines: 1,
-              //     overflow: TextOverflow.ellipsis,
-              //     style: TextStyle(
-              //         fontSize: 16,
-              //         fontWeight: i == selectedRadioTile
-              //             ? FontWeight.bold
-              //             : FontWeight.normal,
-              //         color: i == selectedRadioTile
-              //             ? Colors.amber[600]
-              //             : Colors.black),
-              //   ),
-              //   onChanged: (val) {
-              //     setState(() {
-              //       selectedRadioTile = val;
-              //     });
-              //   },
-              //   activeColor: Colors.amber[600],
-              //   secondary: Text(
-              //     "RM ${i + 1}.00",
-              //     style: TextStyle(
-              //         fontWeight: i == selectedRadioTile
-              //             ? FontWeight.bold
-              //             : FontWeight.normal,
-              //         color: i == selectedRadioTile
-              //             ? Colors.amber[600]
-              //             : Colors.black),
-              //   ),
-              //   selected: false,
-              // ),
-            },
-          ),
+                        //  RadioListTile(
+                        //   value: i,
+                        //   groupValue: selectedRadioTile,
+                        //   title: Text(
+                        //     "Food $i",
+                        //     maxLines: 1,
+                        //     overflow: TextOverflow.ellipsis,
+                        //     style: TextStyle(
+                        //         fontSize: 16,
+                        //         fontWeight: i == selectedRadioTile
+                        //             ? FontWeight.bold
+                        //             : FontWeight.normal,
+                        //         color: i == selectedRadioTile
+                        //             ? Colors.amber[600]
+                        //             : Colors.black),
+                        //   ),
+                        //   onChanged: (val) {
+                        //     setState(() {
+                        //       selectedRadioTile = val;
+                        //     });
+                        //   },
+                        //   activeColor: Colors.amber[600],
+                        //   secondary: Text(
+                        //     "RM ${i + 1}.00",
+                        //     style: TextStyle(
+                        //         fontWeight: i == selectedRadioTile
+                        //             ? FontWeight.bold
+                        //             : FontWeight.normal,
+                        //         color: i == selectedRadioTile
+                        //             ? Colors.amber[600]
+                        //             : Colors.black),
+                        //   ),
+                        //   selected: false,
+                        // ),
+                      },
+                    ),
         ]),
       ),
       bottomNavigationBar: FadeInUp(
@@ -495,14 +583,124 @@ class _FoodMenuState extends State<FoodMenu> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
                     onPressed: () {
-                      Get.to(OrderConfirm());
+                      // Get.to(OrderConfirm());
                       // _sendToServer();
+                      print(my_cart);
                     },
                     child: Text(
                       "Add Order",
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget addOnWidget(String addon, String myaddon) {
+    List _addons = addon.split(",");
+    String _myaddon = myaddon;
+    return FadeInDown(
+      duration: Duration(milliseconds: 300),
+      child: Dialog(
+        insetPadding: EdgeInsets.all(25),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0))),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                SizedBox(
+                  height: 5,
+                ),
+                Container(
+                  height: 200,
+                  child: new ListView.builder(
+                      itemCount: _addons.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return new CheckboxListTile(
+                            activeColor: Colors.pink[300],
+                            dense: true,
+                            //font change
+                            title: new Text(
+                              _addons[index],
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5),
+                            ),
+                            value: _myaddon.contains( _addons[index]),
+                            // secondary: Container(
+                            //   height: 50,
+                            //   width: 50,
+
+                            // ),
+                            onChanged: (bool val) {
+                              print(val);
+                              print(index);
+                              setState(() {
+                                _myaddon = "${_addons[index]},";
+                              });
+                              print( _myaddon.contains( _addons[index]));
+                            });
+                      }),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    SizedBox(
+                      width: Get.width / 3,
+                      height: 40,
+                      child: RaisedButton(
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: Text(
+                          "Close",
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                        color: Colors.red,
+                        textColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: new BorderRadius.circular(8.0),
+                        ),
+                        padding: EdgeInsets.all(14),
+                      ),
+                    ),
+                    SizedBox(
+                      width: Get.width / 3,
+                      height: 40,
+                      child: RaisedButton(
+                        onPressed: () {
+                          // _inputValidate();
+                        },
+                        child: Text(
+                          "Submit",
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                        color: Colors.green,
+                        textColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: new BorderRadius.circular(8.0),
+                        ),
+                        padding: EdgeInsets.all(14),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 15,
                 ),
               ],
             ),
