@@ -4,6 +4,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_starter/pages/user/user_order_success.dart';
 import 'package:flutter_starter/services/api_services/fireDB.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:intl/intl.dart';
 
 class FoodMenu extends StatefulWidget {
   @override
@@ -42,6 +44,7 @@ class _FoodMenuState extends State<FoodMenu> {
   var product_url =
       "https://s3.eu-west-2.amazonaws.com/www.grocy.shop/products/images/3f6ec1e6-f062-42f8-ac38-67d2dc87e031.jpg";
   List my_cart = [];
+  final box = GetStorage();
 
   @override
   void initState() {
@@ -49,6 +52,7 @@ class _FoodMenuState extends State<FoodMenu> {
     setState(() {
       stall_data = Get.arguments;
     });
+    print(stall_data);
     fetchFoods();
   }
 
@@ -339,7 +343,7 @@ class _FoodMenuState extends State<FoodMenu> {
                                                         addOnWidget(
                                                           my_cart[i]["add_ons"],
                                                           my_cart[i]
-                                                              ["user_add_ons"],
+                                                              ["user_add_ons"],i
                                                         ),
                                                         barrierDismissible:
                                                             false);
@@ -545,8 +549,8 @@ class _FoodMenuState extends State<FoodMenu> {
                     ),
         ]),
       ),
-      bottomNavigationBar: FadeInUp(
-        duration: Duration(seconds: 1),
+      bottomNavigationBar: my_cart.length == 0 ? null : FadeInUp(
+        duration: Duration(milliseconds : 500),
         child: Container(
           color: Colors.red[50],
           child: Padding(
@@ -585,7 +589,28 @@ class _FoodMenuState extends State<FoodMenu> {
                     onPressed: () {
                       // Get.to(OrderConfirm());
                       // _sendToServer();
-                      print(my_cart);
+
+                      var _order_data ={
+                        "total" : my_cart.length > 0
+                          ? my_cart
+                              .map((e) => e["qty"] * e["price"])
+                              .reduce((sum, element) => sum + element)
+                              .toStringAsFixed(2)
+                          : "0.0",
+                          "shop_id" : stall_data["shop_id"],
+                          "user_id" : box.read("my_id"),
+                        "foods" :my_cart,
+                        "review":0,
+                        "status" : 0,
+                        "user_cancel_reason":"",
+                        "owner_cancel_reason":"",
+                        "date" : new DateFormat("DD/MM/yyyy HH:mm").format(new DateTime.now()).toString(),
+                        "order_id" : box.read("user")["first_name"][0] + new DateFormat("ddHHss").format(new DateTime.now()).toString()
+
+                      };
+                      print(_order_data);
+
+                      Database.addOrder(_order_data);
                     },
                     child: Text(
                       "Add Order",
@@ -601,112 +626,126 @@ class _FoodMenuState extends State<FoodMenu> {
     );
   }
 
-  Widget addOnWidget(String addon, String myaddon) {
-    List _addons = addon.split(",");
+  Widget addOnWidget(String addon, String myaddon, int index) {
+    List _addons = addon.split(",") ?? [];
     String _myaddon = myaddon;
-    return FadeInDown(
-      duration: Duration(milliseconds: 300),
-      child: Dialog(
-        insetPadding: EdgeInsets.all(25),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10.0))),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                SizedBox(
-                  height: 5,
-                ),
-                Container(
-                  height: 200,
-                  child: new ListView.builder(
-                      itemCount: _addons.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return new CheckboxListTile(
-                            activeColor: Colors.pink[300],
-                            dense: true,
-                            //font change
-                            title: new Text(
-                              _addons[index],
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.5),
-                            ),
-                            value: _myaddon.contains( _addons[index]),
-                            // secondary: Container(
-                            //   height: 50,
-                            //   width: 50,
 
-                            // ),
-                            onChanged: (bool val) {
-                              print(val);
-                              print(index);
-                              setState(() {
-                                _myaddon = "${_addons[index]},";
+    return StatefulBuilder(// StatefulBuilder
+        builder: (context, setState) {
+      return FadeInDown(
+        duration: Duration(milliseconds: 300),
+        child: Dialog(
+          insetPadding: EdgeInsets.all(25),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Container(
+                    height: 200,
+                    child: new ListView.builder(
+                        itemCount: _addons.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return new CheckboxListTile(
+                              activeColor: Colors.pink[300],
+                              dense: true,
+                              //font change
+                              title: new Text(
+                                _addons[index],
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5),
+                              ),
+                              value: _myaddon.contains(_addons[index]),
+                              // secondary: Container(
+                              //   height: 50,
+                              //   width: 50,
+
+                              // ),
+                              onChanged: (bool val) {
+                                print(val);
+                                print(index);
+                                if (val) {
+                                  setState(() {
+                                    _myaddon += "${_addons[index]},";
+                                  });
+                                } else {
+                                   setState(() {
+                                    _myaddon= _myaddon.replaceAll("${_addons[index]},","");
+                                  });
+                                }
+
+                                print(_myaddon);
                               });
-                              print( _myaddon.contains( _addons[index]));
-                            });
-                      }),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    SizedBox(
-                      width: Get.width / 3,
-                      height: 40,
-                      child: RaisedButton(
-                        onPressed: () {
-                          Get.back();
-                        },
-                        child: Text(
-                          "Close",
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w700),
+                        }),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      SizedBox(
+                        width: Get.width / 3,
+                        height: 40,
+                        child: RaisedButton(
+                          onPressed: () {
+                            Get.back();
+                          },
+                          child: Text(
+                            "Close",
+                            style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w700),
+                          ),
+                          color: Colors.red,
+                          textColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: new BorderRadius.circular(8.0),
+                          ),
+                          padding: EdgeInsets.all(14),
                         ),
-                        color: Colors.red,
-                        textColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: new BorderRadius.circular(8.0),
-                        ),
-                        padding: EdgeInsets.all(14),
                       ),
-                    ),
-                    SizedBox(
-                      width: Get.width / 3,
-                      height: 40,
-                      child: RaisedButton(
-                        onPressed: () {
-                          // _inputValidate();
-                        },
-                        child: Text(
-                          "Submit",
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w700),
+                      SizedBox(
+                        width: Get.width / 3,
+                        height: 40,
+                        child: RaisedButton(
+                          onPressed: () {
+                            // _inputValidate();
+                            print(_myaddon);
+                            my_cart[index]["user_add_ons"] = _myaddon;
+                            Get.back();
+                          },
+                          child: Text(
+                            "Submit",
+                            style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w700),
+                          ),
+                          color: Colors.green,
+                          textColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: new BorderRadius.circular(8.0),
+                          ),
+                          padding: EdgeInsets.all(14),
                         ),
-                        color: Colors.green,
-                        textColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: new BorderRadius.circular(8.0),
-                        ),
-                        padding: EdgeInsets.all(14),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 15,
-                ),
-              ],
+                    ],
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

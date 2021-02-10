@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/pages/sign_up_as.dart';
+import 'package:flutter_starter/pages/user/user_profile_update.dart';
 import 'package:flutter_starter/widgets/profile_widget.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -27,6 +28,7 @@ class _UserProfileState extends State<UserProfile> {
         title: Text("My Profile"),
         centerTitle: true,
         backgroundColor: Colors.amber[700],
+        actions: [ ],
       ),
       body: SingleChildScrollView(
               child: Padding(
@@ -63,15 +65,14 @@ class _UserProfileState extends State<UserProfile> {
                         ),
                         FlatButton(
                             onPressed: () {
-                             
-                              Get.offAll(SignUpAs());
+                              Get.to(UserProfileUpdate());
                             },
                             child: Text(
-                              "Logout",
+                              "Update",
                               style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.red),
+                                  color: Colors.green[400]),
                             ))
                       ],
                     ),
@@ -96,6 +97,29 @@ class _UserProfileState extends State<UserProfile> {
                       height: 20,
                     ),
                     ProfileWidget("Category", box.read("user")["category"]),
+                     SizedBox(
+                      height: 40,
+                    ),
+                     Align(
+                          alignment: Alignment.center,
+                          child: SizedBox(
+                            height: 35,
+                            width: 180,
+                            child: RaisedButton(
+                              color: Colors.pink,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              onPressed: () {
+                                Get.offAll(SignUpAs());
+                                box.erase();
+                              },
+                              child: Text(
+                                "Logout",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
                    ],
                 ),
               ),

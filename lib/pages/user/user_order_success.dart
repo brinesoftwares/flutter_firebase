@@ -10,12 +10,15 @@ class OrderConfirm extends StatefulWidget {
 }
 
 class _OrderConfirmState extends State<OrderConfirm> {
-
+var data =[];
 
 
   
   @override
 void initState(){
+  setState(() {
+    data= Get.arguments;
+  });
   super.initState();
 }
 
@@ -92,12 +95,12 @@ void initState(){
                             SizedBox(
                               height: 5,
                             ),
-                            orderInfo("Order Id", "5647476"),
+                            orderInfo("Order Id", data[0]),
                             // orderInfo("Payment Method",
                             //     orderDetails["paymentMethod"]),
                             // orderInfo("Shopping Method", ""),
-                            orderInfo("Total Price", "RM 2.54"),
-                            orderInfo( "Ordered Date","34.56600"),
+                            orderInfo("Total Price", "RM ${data[1]}"),
+                            orderInfo( "Ordered Date",data[2]),
                              
 
                             SizedBox(

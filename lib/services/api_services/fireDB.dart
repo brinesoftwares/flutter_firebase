@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/pages/stall_owner/owner_dashboard.dart';
 import 'package:flutter_starter/pages/user/user_dashboard.dart';
+import 'package:flutter_starter/pages/user/user_order_success.dart';
 import 'package:flutter_starter/widgets/loading_widget.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -211,6 +212,7 @@ class Database {
   }
 
   static Future fetchOwnerFood() async {
+    
     try {
       var data = await _db
           .collection('foods')
@@ -344,6 +346,54 @@ class Database {
     }
 
   }
+
+   static Future updateUserProfile(Map<String, dynamic> data) async {
+    Get.dialog(LoadingWidget(), barrierDismissible: false);
+   try {
+       await _db
+        .collection('users')
+        .document(box.read("my_id"))
+        .updateData(data)
+        
+        .catchError((e) {
+      print(e);
+    });
+     if (Get.isDialogOpen) {
+        Get.back();
+      }
+      print(data);
+      box.write('user', data);
+       Get.off(UserDashboard());
+      success_mgs("Info", "Profile Updated Successfully!");
+    return true;
+   } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+      return false;
+   }
+   
+  }
+
+ static Future<Map> addOrder(Map<String, dynamic> data) async {
+    // data["id"] = _db.collection('owners').document().documentID;
+    Get.dialog(LoadingWidget(), barrierDismissible: false);
+    await _db.collection('orders').add(data).then((value) {
+      print(value.toString());
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      Get.to(OrderConfirm(),arguments: [data["order_id"],data["total"],data["date"],]);
+      // success_mgs("Info", "Food added Successful!");
+    }).catchError(() {
+      server_error();
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+    });
+  }
+
 
   // static Future<void> ownerRegister(Map<String, dynamic> task) async {
   //   await _db.collection('owners').document().setData(task).catchError((e) {

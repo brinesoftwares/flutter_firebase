@@ -118,6 +118,7 @@ class _OwnerLoginState extends State<OwnerLogin> {
         ),
         child: TextFormField(
           validator: validatePass,
+          obscureText: true,
           decoration: InputDecoration(
             border: InputBorder.none,
             focusedBorder: InputBorder.none,
