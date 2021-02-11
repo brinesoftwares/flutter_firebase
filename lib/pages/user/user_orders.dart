@@ -1,6 +1,8 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_starter/services/api_services/fireDB.dart';
 import 'package:flutter_starter/styles/widgets_style.dart';
 import 'package:flutter_starter/utils/form_validator.dart';
 import 'package:flutter_starter/widgets/orders.dart';
@@ -19,6 +21,7 @@ class _UserOrdersState extends State<UserOrders> {
   String reason;
   int selected_reason;
   var rated_food = [];
+  bool loading = true;
   List<String> _dynamicChips = [
     'Reason 1',
     'Reason 2',
@@ -26,7 +29,39 @@ class _UserOrdersState extends State<UserOrders> {
     'Reason 4',
     'Reason 5',
   ];
+
+  var pending_orders = [];
+  var cancelled_orders = [];
+  var completed_orders = [];
+
   TextEditingController reasonController = TextEditingController();
+
+  fetchOredrs() async {
+    await Database.fetchOrders(0).then((value) {
+      setState(() {
+        pending_orders = value;
+        loading = false;
+      });
+    });
+    await Database.fetchOrders(0).then((value) {
+      setState(() {
+        cancelled_orders = value;
+      });
+    });
+    await Database.fetchOrders(0).then((value) {
+      setState(() {
+        completed_orders = value;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    fetchOredrs();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -55,8 +90,16 @@ class _UserOrdersState extends State<UserOrders> {
         body: TabBarView(
           physics: NeverScrollableScrollPhysics(),
           children: [
-            ListView.builder(
-              itemCount: 9,
+          loading ? Center(
+              child: SizedBox(
+                height: 30,
+                child: SpinKitThreeBounce(
+                  color: Colors.green,
+                  size: 25.0,
+                ),
+              ),
+            ) :  ListView.builder(
+              itemCount: pending_orders.length,
               physics: ScrollPhysics(),
               shrinkWrap: true,
               itemBuilder: (context, i) {
@@ -78,9 +121,10 @@ class _UserOrdersState extends State<UserOrders> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              "# 667565",
+                              "# ${pending_orders[i]['order_id']}",
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -88,64 +132,99 @@ class _UserOrdersState extends State<UserOrders> {
                             ),
                             SizedBox(
                               width: 10,
-                            ),
+                            ), Text(
+                          pending_orders[i]['date'],
+                          style:
+                              TextStyle(fontSize: 12, color: Colors.grey[800]),
+                        ),
                           ],
                         ),
                         Divider(
                           color: Colors.grey,
                         ),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Text(
-                              "Veg Pizza",
+                              "Total",
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                            SizedBox(width: 12,),
                             Text(
-                              "RM 2.65",
+                              "RM ${pending_orders[i]['total']}",
                               style: TextStyle(
                                 fontSize: 16,
+                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8, bottom: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Text(
-                                "Logeshwaran (USR00034)",
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.grey[600]),
-                              ),
-                              Row(
-                                children: <Widget>[
-                                  Text(
-                                    "Qty: ",
-                                    style: TextStyle(
-                                        fontSize: 12, color: Colors.grey),
-                                  ),
-                                  Text(
-                                    "4",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          "12/06/2020 12:34",
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[800]),
-                        ),
+                        // Padding(
+                        //   padding: const EdgeInsets.only(top: 8, bottom: 8),
+                        //   child: Row(
+                        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //     children: <Widget>[
+                        //       Text(
+                        //         "Logeshwaran (USR00034)",
+                        //         style: TextStyle(
+                        //             fontSize: 12, color: Colors.grey[600]),
+                        //       ),
+                        //       Row(
+                        //         children: <Widget>[
+                        //           Text(
+                        //             "Qty: ",
+                        //             style: TextStyle(
+                        //                 fontSize: 12, color: Colors.grey),
+                        //           ),
+                        //           Text(
+                        //             "4",
+                        //             style: TextStyle(
+                        //               fontSize: 14,
+                        //             ),
+                        //           ),
+                        //         ],
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                        // // Text(
+                        //   "12/06/2020 12:34",style:TextStyle(fontSize: 12, color: Colors.grey[800]),
+                        // ),
                         SizedBox(
+                          height: 10,
+                        ),
+
+
+ ListView.builder(
+              itemCount: pending_orders[i]["foods"].length,
+              physics: ScrollPhysics(),
+              shrinkWrap: true,
+              itemBuilder: (context, _i) {
+                return
+  Padding(
+    padding: const EdgeInsets.all(4.0),
+    child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                            Expanded(flex: 3,
+                              child: Text(pending_orders[i]['foods'][_i]['food'],style:TextStyle(fontSize: 12, fontWeight: FontWeight.bold))
+                            ),
+                             Expanded(flex: 2,
+                              child: Text("${pending_orders[i]['foods'][_i]['qty']} X RM ${pending_orders[i]['foods'][_i]['price']}",style:TextStyle(fontSize: 10, color: Colors.grey[800]))
+                            ), Expanded(flex: 4,
+                              child: Text(pending_orders[i]['foods'][_i]['user_add_ons'],style:TextStyle(fontSize: 12, color: Colors.grey[600]))
+                            ),
+                          ],),
+  );
+              }),
+
+
+                        
+
+SizedBox(
                           height: 10,
                         ),
                         Align(
@@ -291,46 +370,44 @@ class _UserOrdersState extends State<UserOrders> {
                           height: 10,
                         ),
                         Center(
-                          child: rated_food.contains(i) ?
-                           RatingBar.builder(
-                          initialRating: 3,
-                          minRating: 1,
-                          itemSize: 30,
-                          direction: Axis.horizontal,
-                          allowHalfRating: false,
-                          itemCount: 5,
-                          itemPadding: EdgeInsets.symmetric(horizontal: 2.0),
-                          itemBuilder: (context, _) => Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                          ),
-                          onRatingUpdate: (rating) {
-                            print(rating);
-                          },
-                        ) :
-                       
-                           SizedBox(
-                            height: 35,
-                            width: 120,
-                            child: RaisedButton(
-                              color: Colors.amber[400],
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              onPressed: () {
-                                setState(() {
-                                  rated_food.add(i);
-                                });
-                              },
-                              child: Text(
-                                "Rate",
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ),
-                          ) 
-                          
-                          
-                        ),
-                       // SizedBox(
+                            child: rated_food.contains(i)
+                                ? RatingBar.builder(
+                                    initialRating: 3,
+                                    minRating: 1,
+                                    itemSize: 30,
+                                    direction: Axis.horizontal,
+                                    allowHalfRating: false,
+                                    itemCount: 5,
+                                    itemPadding:
+                                        EdgeInsets.symmetric(horizontal: 2.0),
+                                    itemBuilder: (context, _) => Icon(
+                                      Icons.star,
+                                      color: Colors.amber,
+                                    ),
+                                    onRatingUpdate: (rating) {
+                                      print(rating);
+                                    },
+                                  )
+                                : SizedBox(
+                                    height: 35,
+                                    width: 120,
+                                    child: RaisedButton(
+                                      color: Colors.amber[400],
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      onPressed: () {
+                                        setState(() {
+                                          rated_food.add(i);
+                                        });
+                                      },
+                                      child: Text(
+                                        "Rate",
+                                        style: TextStyle(color: Colors.black),
+                                      ),
+                                    ),
+                                  )),
+                        // SizedBox(
                         //   height: 5,
                         // ),
                       ],

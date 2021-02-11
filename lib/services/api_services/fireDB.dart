@@ -393,6 +393,36 @@ class Database {
       }
     });
   }
+  
+   
+ static Future fetchOrders(status) async {
+    try {
+      var data = await _db
+          .collection('orders')
+          .where("user_id", isEqualTo: box.read("my_id"))
+          .where("status", isEqualTo: status)
+          .getDocuments();
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+
+      List filter_data = data.documents.map((e) {
+        var temp = e.data;
+        temp["_id"] = e.documentID;
+        return temp;
+      }).toList();
+
+      return filter_data;
+    } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+
+      return [];
+    }
+
+  }
 
 
   // static Future<void> ownerRegister(Map<String, dynamic> task) async {

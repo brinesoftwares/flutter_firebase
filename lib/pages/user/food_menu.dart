@@ -339,14 +339,20 @@ class _FoodMenuState extends State<FoodMenu> {
 
                                                 FlatButton(
                                                   onPressed: () {
+                                                    int _index = my_cart.indexWhere(
+                                                        (element) =>
+                                                            element["food"] ==
+                                                            foods[i]["food"]);
                                                     Get.dialog(
                                                         addOnWidget(
-                                                          my_cart[i]["add_ons"],
-                                                          my_cart[i]
-                                                              ["user_add_ons"],i
+                                                          my_cart[_index]["add_ons"],
+                                                          my_cart[_index]
+                                                              ["user_add_ons"],_index
                                                         ),
                                                         barrierDismissible:
                                                             false);
+
+                                                   
                                                   },
                                                   child: Text(
                                                     "Add ons",
@@ -627,6 +633,9 @@ class _FoodMenuState extends State<FoodMenu> {
   }
 
   Widget addOnWidget(String addon, String myaddon, int index) {
+    print(addon);
+    print(addon);
+    print(index);
     List _addons = addon.split(",") ?? [];
     String _myaddon = myaddon;
 

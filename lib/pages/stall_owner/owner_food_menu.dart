@@ -25,10 +25,12 @@ class _OwnerFoodMenuState extends State<OwnerFoodMenu> {
   GlobalKey<FormState> _key = new GlobalKey();
   bool _validate = false;
   bool image_selected = false;
+  bool image_updated = false;
   String food_name = "";
   String food_price = "";
   String shop_image;
   bool loading = true;
+
   // List<FoodModel> foods = [
   //   FoodModel(food: "Burger", price: "43.2"),
   //   FoodModel(food: "Sandwich", price: "4.5"),
@@ -60,6 +62,7 @@ class _OwnerFoodMenuState extends State<OwnerFoodMenu> {
     setState(() {
       if (pickedFile != null) {
         image_selected = true;
+        image_updated = true;
         _image = File(pickedFile.path);
       } else {
         print('No image selected.');
@@ -204,7 +207,7 @@ class _OwnerFoodMenuState extends State<OwnerFoodMenu> {
                 ),
               ),
             ),
-            image_selected
+            image_updated
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
@@ -234,7 +237,11 @@ class _OwnerFoodMenuState extends State<OwnerFoodMenu> {
                         width: Get.width / 3,
                         height: 40,
                         child: RaisedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            setState(() {
+                              image_updated = false;
+                            });
+                          },
                           child: Text(
                             "Update",
                             style: TextStyle(
