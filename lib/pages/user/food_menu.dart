@@ -610,6 +610,8 @@ class _FoodMenuState extends State<FoodMenu> {
                         "status" : 0,
                         "user_cancel_reason":"",
                         "owner_cancel_reason":"",
+                        "name":box.read("user")["first_name"],
+                        "user_id_no":box.read("user")["id_no"],
                         "date" : new DateFormat("DD/MM/yyyy HH:mm").format(new DateTime.now()).toString(),
                         "order_id" : box.read("user")["first_name"][0] + new DateFormat("ddHHss").format(new DateTime.now()).toString()
 

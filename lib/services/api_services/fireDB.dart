@@ -425,6 +425,56 @@ class Database {
   }
 
 
+   static Future updateUserCancel(String reason, String id) async {
+   try {
+       await _db
+        .collection('orders')
+        .document(id)
+        .updateData({"status": 1, "user_cancel_reason" : reason})
+        
+        .catchError((e) {
+      print(e);
+    });
+     if (Get.isDialogOpen) {
+        Get.back();
+      }
+      success_mgs("Info", "Order Cancelled Successfully!");
+    return true;
+   } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+      return false;
+   }
+   
+  }
+
+   static Future updateUserRating(int rating, String id) async {
+   try {
+       await _db
+        .collection('orders')
+        .document(id)
+        .updateData({"review" : rating})
+        
+        .catchError((e) {
+      print(e);
+    });
+     if (Get.isDialogOpen) {
+        Get.back();
+      }
+      success_mgs("Info", "Rated Successfully!");
+    return true;
+   } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+      return false;
+   }
+   
+  }
+
   // static Future<void> ownerRegister(Map<String, dynamic> task) async {
   //   await _db.collection('owners').document().setData(task).catchError((e) {
   //     print(e);

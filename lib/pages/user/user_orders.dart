@@ -43,12 +43,13 @@ class _UserOrdersState extends State<UserOrders> {
         loading = false;
       });
     });
-    await Database.fetchOrders(0).then((value) {
+    await Database.fetchOrders(1).then((value) {
+      print(value);
       setState(() {
         cancelled_orders = value;
       });
     });
-    await Database.fetchOrders(0).then((value) {
+    await Database.fetchOrders(2).then((value) {
       setState(() {
         completed_orders = value;
       });
@@ -90,16 +91,233 @@ class _UserOrdersState extends State<UserOrders> {
         body: TabBarView(
           physics: NeverScrollableScrollPhysics(),
           children: [
-          loading ? Center(
-              child: SizedBox(
-                height: 30,
-                child: SpinKitThreeBounce(
-                  color: Colors.green,
-                  size: 25.0,
-                ),
-              ),
-            ) :  ListView.builder(
-              itemCount: pending_orders.length,
+            loading
+                ? Center(
+                    child: SizedBox(
+                      height: 30,
+                      child: SpinKitThreeBounce(
+                        color: Colors.green,
+                        size: 25.0,
+                      ),
+                    ),
+                  )
+                :  pending_orders.length == 0 ? Center(
+                      child: Text(
+                        "No pending orders",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w700),
+                      ),
+                    ) :  ListView.builder(
+                    itemCount: pending_orders.length,
+                    physics: ScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (context, i) {
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                            right: 15, left: 15, top: 8, bottom: 8),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.amber[50],
+                            borderRadius: BorderRadius.circular(8.0),
+                            border: new Border.all(
+                              color: Colors.grey[700],
+                              width: 0.2,
+                            ),
+                          ),
+                          padding: EdgeInsets.all(10),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(
+                                    "# ${pending_orders[i]['order_id']}",
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.pink[700]),
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    pending_orders[i]['date'],
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.grey[800]),
+                                  ),
+                                ],
+                              ),
+                              Divider(
+                                color: Colors.grey,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "${pending_orders[i]['name']} (${pending_orders[i]['user_id_no']})",
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.grey[600]),
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Text(
+                                        "Total",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 12,
+                                      ),
+                                      Text(
+                                        "RM ${pending_orders[i]['total']}",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              // Padding(
+                              //   padding: const EdgeInsets.only(top: 8, bottom: 8),
+                              //   child: Row(
+                              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              //     children: <Widget>[
+                              //       Text(
+                              //         "Logeshwaran (USR00034)",
+                              //         style: TextStyle(
+                              //             fontSize: 12, color: Colors.grey[600]),
+                              //       ),
+                              //       Row(
+                              //         children: <Widget>[
+                              //           Text(
+                              //             "Qty: ",
+                              //             style: TextStyle(
+                              //                 fontSize: 12, color: Colors.grey),
+                              //           ),
+                              //           Text(
+                              //             "4",
+                              //             style: TextStyle(
+                              //               fontSize: 14,
+                              //             ),
+                              //           ),
+                              //         ],
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
+                              // // Text(
+                              //   "12/06/2020 12:34",style:TextStyle(fontSize: 12, color: Colors.grey[800]),
+                              // ),
+                              SizedBox(
+                                height: 10,
+                              ),
+
+                              ListView.builder(
+                                  itemCount: pending_orders[i]["foods"].length,
+                                  physics: ScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, _i) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                              flex: 3,
+                                              child: Text(
+                                                  pending_orders[i]['foods'][_i]
+                                                      ['food'],
+                                                  style: TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold))),
+                                          Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                  "${pending_orders[i]['foods'][_i]['qty']} X RM ${pending_orders[i]['foods'][_i]['price']}",
+                                                  style: TextStyle(
+                                                      fontSize: 10,
+                                                      color:
+                                                          Colors.grey[800]))),
+                                          Expanded(
+                                              flex: 4,
+                                              child: pending_orders[i]['foods']
+                                                          [_i]['user_add_ons']
+                                                      .toString()
+                                                      .isEmpty
+                                                  ? Text("---",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color:
+                                                              Colors.grey[600]))
+                                                  : Text(
+                                                      pending_orders[i]['foods']
+                                                          [_i]['user_add_ons'],
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors
+                                                              .grey[600]))),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: SizedBox(
+                                  height: 35,
+                                  width: 120,
+                                  child: RaisedButton(
+                                    color: Colors.red[400],
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    onPressed: () {
+                                      // Get.to(FoodMenu(),transition: Transition.downToUp);
+                                      Get.dialog(cancelWidget(i),
+                                          barrierDismissible: false);
+                                    },
+                                    child: Text(
+                                      "Cancel",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+
+
+
+          cancelled_orders.length == 0 ? Center(
+                      child: Text(
+                        "No cancelled orders",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w700),
+                      ),
+                    ) :  ListView.builder(
+              itemCount: cancelled_orders.length,
               physics: ScrollPhysics(),
               shrinkWrap: true,
               itemBuilder: (context, i) {
@@ -108,7 +326,7 @@ class _UserOrdersState extends State<UserOrders> {
                       right: 15, left: 15, top: 8, bottom: 8),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.amber[50],
+                      color: Colors.red[50],
                       borderRadius: BorderRadius.circular(8.0),
                       border: new Border.all(
                         color: Colors.grey[700],
@@ -124,7 +342,7 @@ class _UserOrdersState extends State<UserOrders> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              "# ${pending_orders[i]['order_id']}",
+                              "# ${cancelled_orders[i]['order_id']}",
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -132,124 +350,122 @@ class _UserOrdersState extends State<UserOrders> {
                             ),
                             SizedBox(
                               width: 10,
-                            ), Text(
-                          pending_orders[i]['date'],
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[800]),
-                        ),
+                            ),
+                            Text(
+                              cancelled_orders[i]['date'],
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey[800]),
+                            ),
                           ],
                         ),
                         Divider(
                           color: Colors.grey,
                         ),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
                             Text(
-                              "Total",
+                              "${cancelled_orders[i]['name']} (${cancelled_orders[i]['user_id_no']})",
                               style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+                                  fontSize: 12, color: Colors.grey[600]),
                             ),
-                            SizedBox(width: 12,),
-                            Text(
-                              "RM ${pending_orders[i]['total']}",
-                              style: TextStyle(
-                                fontSize: 16,
-                                 fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              children: <Widget>[
+                                Text(
+                                  "Total",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 12,
+                                ),
+                                Text(
+                                  "RM ${cancelled_orders[i]['total']}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        // Padding(
-                        //   padding: const EdgeInsets.only(top: 8, bottom: 8),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        //     children: <Widget>[
-                        //       Text(
-                        //         "Logeshwaran (USR00034)",
-                        //         style: TextStyle(
-                        //             fontSize: 12, color: Colors.grey[600]),
-                        //       ),
-                        //       Row(
-                        //         children: <Widget>[
-                        //           Text(
-                        //             "Qty: ",
-                        //             style: TextStyle(
-                        //                 fontSize: 12, color: Colors.grey),
-                        //           ),
-                        //           Text(
-                        //             "4",
-                        //             style: TextStyle(
-                        //               fontSize: 14,
-                        //             ),
-                        //           ),
-                        //         ],
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        // // Text(
-                        //   "12/06/2020 12:34",style:TextStyle(fontSize: 12, color: Colors.grey[800]),
-                        // ),
                         SizedBox(
                           height: 10,
                         ),
-
-
- ListView.builder(
-              itemCount: pending_orders[i]["foods"].length,
-              physics: ScrollPhysics(),
-              shrinkWrap: true,
-              itemBuilder: (context, _i) {
-                return
-  Padding(
-    padding: const EdgeInsets.all(4.0),
-    child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                            Expanded(flex: 3,
-                              child: Text(pending_orders[i]['foods'][_i]['food'],style:TextStyle(fontSize: 12, fontWeight: FontWeight.bold))
-                            ),
-                             Expanded(flex: 2,
-                              child: Text("${pending_orders[i]['foods'][_i]['qty']} X RM ${pending_orders[i]['foods'][_i]['price']}",style:TextStyle(fontSize: 10, color: Colors.grey[800]))
-                            ), Expanded(flex: 4,
-                              child: Text(pending_orders[i]['foods'][_i]['user_add_ons'],style:TextStyle(fontSize: 12, color: Colors.grey[600]))
-                            ),
-                          ],),
-  );
-              }),
-
-
-                        
-
-SizedBox(
+                        ListView.builder(
+                            itemCount: cancelled_orders[i]["foods"].length,
+                            physics: ScrollPhysics(),
+                            shrinkWrap: true,
+                            itemBuilder: (context, _i) {
+                              return Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                            cancelled_orders[i]['foods'][_i]
+                                                ['food'],
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold))),
+                                    Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                            "${cancelled_orders[i]['foods'][_i]['qty']} X RM ${cancelled_orders[i]['foods'][_i]['price']}",
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.grey[800]))),
+                                    Expanded(
+                                        flex: 4,
+                                        child: cancelled_orders[i]['foods'][_i]
+                                                    ['user_add_ons']
+                                                .toString()
+                                                .isEmpty
+                                            ? Text("---",
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey[600]))
+                                            : Text(
+                                                cancelled_orders[i]['foods'][_i]
+                                                    ['user_add_ons'],
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey[600]))),
+                                  ],
+                                ),
+                              );
+                            }),
+                        SizedBox(
                           height: 10,
                         ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: SizedBox(
-                            height: 35,
-                            width: 120,
-                            child: RaisedButton(
-                              color: Colors.red[400],
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              onPressed: () {
-                                // Get.to(FoodMenu(),transition: Transition.downToUp);
-                                Get.dialog(cancelWidget(),
-                                    barrierDismissible: false);
-                              },
-                              child: Text(
-                                "Cancel",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
+                        Row(
+                          children: [
+                            Text("Cancelled by : ",
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey[600])),
+                                     Text( cancelled_orders[i]['owner_cancel_reason'].toString().isEmpty ? "You" :"Shop",
+                                style: TextStyle(
+                                    fontSize: 11, fontWeight: FontWeight.bold)),
+                          ],
                         ),
-                        SizedBox(
+                          SizedBox(
                           height: 5,
+                        ),
+                         Row(
+                          children: [
+                            Text("Reason : ",
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey[600])),
+                                     Text( cancelled_orders[i]['owner_cancel_reason'].toString().isEmpty ? cancelled_orders[i]['user_cancel_reason'].toString() :cancelled_orders[i]['owner_cancel_reason'].toString(),
+                                style: TextStyle(
+                                    fontSize: 11, fontWeight: FontWeight.bold)),
+                          ],
                         ),
                       ],
                     ),
@@ -257,27 +473,18 @@ SizedBox(
                 );
               },
             ),
-            ListView.builder(
-              itemCount: 9,
-              physics: ScrollPhysics(),
-              shrinkWrap: true,
-              itemBuilder: (context, i) {
-                return FadeIn(
-                    delay: Duration(milliseconds: 160 * i),
-                    child: OrderWidget(
-                        "667565",
-                        "Spicy Chicken Pizza",
-                        "3.87",
-                        "Ramasamy",
-                        "USR0031",
-                        3.toString(),
-                        "03/03/1997 11:45",
-                        Colors.red[50]));
-              },
-            ),
 
-            ListView.builder(
-              itemCount: 9,
+
+
+
+           completed_orders.length == 0 ? Center(
+                      child: Text(
+                        "No Completed orders",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w700),
+                      ),
+                    ) :   ListView.builder(
+              itemCount: completed_orders.length,
               physics: ScrollPhysics(),
               shrinkWrap: true,
               itemBuilder: (context, i) {
@@ -298,10 +505,12 @@ SizedBox(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Row(
+
+                     Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              "# 667565",
+                              "# ${completed_orders[i]['order_id']}",
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -310,6 +519,11 @@ SizedBox(
                             SizedBox(
                               width: 10,
                             ),
+                            Text(
+                              completed_orders[i]['date'],
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey[800]),
+                            ),
                           ],
                         ),
                         Divider(
@@ -317,60 +531,95 @@ SizedBox(
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
+                          children: [
                             Text(
-                              "Veg Pizza",
+                              "${completed_orders[i]['name']} (${completed_orders[i]['user_id_no']})",
                               style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
+                                  fontSize: 12, color: Colors.grey[600]),
                             ),
-                            Text(
-                              "RM 2.65",
-                              style: TextStyle(
-                                fontSize: 16,
-                              ),
+                            Row(
+                              children: <Widget>[
+                                Text(
+                                  "Total",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 12,
+                                ),
+                                Text(
+                                  "RM ${completed_orders[i]['total']}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8, bottom: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Text(
-                                "Logeshwaran (USR00034)",
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.grey[600]),
-                              ),
-                              Row(
-                                children: <Widget>[
-                                  Text(
-                                    "Qty: ",
-                                    style: TextStyle(
-                                        fontSize: 12, color: Colors.grey),
-                                  ),
-                                  Text(
-                                    "4",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          "12/06/2020 12:34",
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[800]),
                         ),
                         SizedBox(
                           height: 10,
                         ),
+                        ListView.builder(
+                            itemCount: completed_orders[i]["foods"].length,
+                            physics: ScrollPhysics(),
+                            shrinkWrap: true,
+                            itemBuilder: (context, _i) {
+                              return Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                            completed_orders[i]['foods'][_i]
+                                                ['food'],
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold))),
+                                    Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                            "${completed_orders[i]['foods'][_i]['qty']} X RM ${completed_orders[i]['foods'][_i]['price']}",
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.grey[800]))),
+                                    Expanded(
+                                        flex: 4,
+                                        child: completed_orders[i]['foods'][_i]
+                                                    ['user_add_ons']
+                                                .toString()
+                                                .isEmpty
+                                            ? Text("---",
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey[600]))
+                                            : Text(
+                                                completed_orders[i]['foods'][_i]
+                                                    ['user_add_ons'],
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey[600]))),
+                                  ],
+                                ),
+                              );
+                            }),
+                        
+                      
+                      
+                        SizedBox(
+                          height: 10,
+                        ),
                         Center(
-                            child: rated_food.contains(i)
+                            child:completed_orders[i]["review"] > 0 ? Text("You Rated : "+completed_orders[i]["review"].toString(),
+                                                style: TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.brown[600])) : rated_food.contains(i)
                                 ? RatingBar.builder(
                                     initialRating: 3,
                                     minRating: 1,
@@ -385,7 +634,8 @@ SizedBox(
                                       color: Colors.amber,
                                     ),
                                     onRatingUpdate: (rating) {
-                                      print(rating);
+                                      print(rating.toInt());
+                                      Database.updateUserRating(rating.toInt(), completed_orders[i]["_id"]);
                                     },
                                   )
                                 : SizedBox(
@@ -417,31 +667,13 @@ SizedBox(
               },
             ),
 
-            // ListView.builder(
-            //   itemCount: 9,
-            //   physics: ScrollPhysics(),
-            //   shrinkWrap: true,
-            //   itemBuilder: (context, i) {
-            //     return FadeIn(
-            //         delay: Duration(milliseconds: 160 * i),
-            //         child: OrderWidget(
-            //             "667565",
-            //             "Spicy Chicken Pizza",
-            //             "3.87",
-            //             "Lokesh",
-            //             "USR0031",
-            //             3.toString(),
-            //             "03/03/1997 11:45",
-            //             Colors.green[50]));
-            //   },
-            // ),
           ],
         ),
       ),
     );
   }
 
-  Widget cancelWidget() {
+  Widget cancelWidget(int index) {
     return FadeInDown(
       duration: Duration(milliseconds: 300),
       child: Dialog(
@@ -493,7 +725,7 @@ SizedBox(
                       height: 40,
                       child: RaisedButton(
                         onPressed: () {
-                          _inputValidate();
+                          _inputValidate(index);
                         },
                         child: Text(
                           "Proceed",
@@ -572,10 +804,20 @@ SizedBox(
     );
   }
 
-  _inputValidate() {
+  _inputValidate(int index) {
     if (_key.currentState.validate()) {
       _key.currentState.save();
       print(reason);
+      print(pending_orders[index]);
+      Get.back();
+      setState(() {
+        loading = true;
+      });
+      Database.updateUserCancel(reason,pending_orders[index]["_id"]).then((value) {
+        fetchOredrs();
+        reasonController.text = "";
+      });
+
     } else {
       setState(() {
         _validate = true;
