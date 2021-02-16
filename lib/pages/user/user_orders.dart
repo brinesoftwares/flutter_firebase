@@ -816,6 +816,8 @@ class _UserOrdersState extends State<UserOrders> {
       Database.updateUserCancel(reason,pending_orders[index]["_id"]).then((value) {
         fetchOredrs();
         reasonController.text = "";
+       Database.getUserToken(pending_orders[index]["user_id"],"Order Cancelled", "Your order (${pending_orders[index]["user_id"]}) Cancelled");
+
       });
 
     } else {

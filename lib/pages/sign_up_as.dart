@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_starter/pages/stall_owner/owner_login.dart';
 import 'package:flutter_starter/pages/user/user_login.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 class SignUpAs extends StatefulWidget {
   @override
@@ -50,6 +51,7 @@ class _SignUpAsState extends State<SignUpAs> {
               FadeInLeft(
                 child: InkWell(
                   onTap: () {
+                    GetStorage().write("isOwner", false);
                     Get.to(UserLogin());
                   },
                   child: Column(
@@ -84,6 +86,8 @@ class _SignUpAsState extends State<SignUpAs> {
               FadeInRight(
                 child: InkWell(
                   onTap: (){
+                    GetStorage().write("isOwner", true);
+
                     Get.to(OwnerLogin());
                   },
                                   child: Column(

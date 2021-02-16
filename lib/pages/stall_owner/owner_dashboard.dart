@@ -10,6 +10,7 @@ import 'package:flutter_starter/pages/user/stall_list.dart';
 import 'package:flutter_starter/pages/user/user_notification.dart';
 import 'package:flutter_starter/pages/user/user_orders.dart';
 import 'package:flutter_starter/pages/user/user_profile.dart';
+import 'package:flutter_starter/services/api_services/fireDB.dart';
 import 'package:flutter_starter/utils/form_validator.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -27,6 +28,8 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
   void initState() { 
     // TODO: implement initState
     print(box.read("user")["id"]);
+    Database.updateOwnerToken();
+
     super.initState();
   }
 

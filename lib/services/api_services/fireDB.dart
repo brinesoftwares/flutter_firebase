@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_starter/pages/stall_owner/owner_dashboard.dart';
 import 'package:flutter_starter/pages/user/user_dashboard.dart';
 import 'package:flutter_starter/pages/user/user_order_success.dart';
+import 'package:flutter_starter/services/api_services/api.dart';
 import 'package:flutter_starter/widgets/loading_widget.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -13,6 +15,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 class Database {
   static final Firestore _db = Firestore.instance;
   static final box = GetStorage();
+  static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
   static server_error() {
     Get.snackbar("Server Error", "Try Again",
@@ -474,7 +477,201 @@ class Database {
    }
    
   }
+  
+   static Future fetchOwnerOrders(status) async {
+    try {
+      var data = await _db
+          .collection('orders')
+          .where("shop_id", isEqualTo: box.read("my_id"))
+          .where("status", isEqualTo: status)
+          .getDocuments();
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
 
+      List filter_data = data.documents.map((e) {
+        var temp = e.data;
+        temp["_id"] = e.documentID;
+        return temp;
+      }).toList();
+
+      return filter_data;
+    } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+
+      return [];
+    }
+
+  }
+ 
+   static Future updateOwnerCancel(String reason, String id) async {
+   try {
+       await _db
+        .collection('orders')
+        .document(id)
+        .updateData({"status": 1, "owner_cancel_reason" : reason})
+        
+        .catchError((e) {
+      print(e);
+    });
+     if (Get.isDialogOpen) {
+        Get.back();
+      }
+      success_mgs("Info", "Order Cancelled Successfully!");
+    return true;
+   } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+      return false;
+   }
+   
+  }
+
+   static Future updateOwnerAccept(String id) async {
+   try {
+       await _db
+        .collection('orders')
+        .document(id)
+        .updateData({"status": 2})
+        
+        .catchError((e) {
+      print(e);
+    });
+     if (Get.isDialogOpen) {
+        Get.back();
+      }
+      success_mgs("Info", "Order Accepted");
+    return true;
+   } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+      return false;
+   }
+   
+  }
+
+     static Future<List> fetchSales() async {
+    try {
+      var data = await _db
+          .collection('orders')
+          .where("shop_id", isEqualTo: box.read("my_id"))
+          .where("status", isEqualTo: 2)
+          .getDocuments();
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+
+      List filter_data = data.documents.map((e) {
+        var temp = e.data;
+        temp["_id"] = e.documentID;
+        return temp;
+      }).toList();
+
+      return filter_data;
+    } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+
+      return [];
+    }
+
+  }
+
+   static Future updateOwnerToken() async {
+       _firebaseMessaging.getToken().then((String token) async{
+    
+   try {
+      await _db
+        .collection('owners')
+        .document(box.read("my_id"))
+        .updateData({"token":token})
+        .catchError((e) {
+      print(e);
+    });
+   } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+   }
+       });
+  }
+
+
+ static Future updateUserToken() async {
+    _firebaseMessaging.getToken().then((String token) async{
+    
+   try {
+      await _db
+        .collection('users')
+        .document(box.read("my_id"))
+        .updateData({"token":token})
+        .catchError((e) {
+      print(e);
+    });
+   } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+   }
+     print(token);
+    });
+  }
+
+   static Future getUserToken(id,title, sub_title) async {
+    try {
+      var data = await _db
+          .collection('users')
+          .document(id)
+          .get()
+          ;
+
+          ApiServices().sendNotification(title, sub_title, data.data["token"]);
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+
+    } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+     ;
+    }
+
+  }
+ 
+ 
+   static Future getOwnerToken(id,title, sub_title) async {
+    try {
+      var data = await _db
+          .collection('owners')
+          .document(id)
+          .get()
+          ;
+
+          ApiServices().sendNotification(title, sub_title, data.data["token"]);
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+
+    } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+     ;
+    }
+
+  }
+ 
+ 
   // static Future<void> ownerRegister(Map<String, dynamic> task) async {
   //   await _db.collection('owners').document().setData(task).catchError((e) {
   //     print(e);

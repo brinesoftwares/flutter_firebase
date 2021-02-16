@@ -612,13 +612,15 @@ class _FoodMenuState extends State<FoodMenu> {
                         "owner_cancel_reason":"",
                         "name":box.read("user")["first_name"],
                         "user_id_no":box.read("user")["id_no"],
-                        "date" : new DateFormat("DD/MM/yyyy HH:mm").format(new DateTime.now()).toString(),
+                        "date" : new DateFormat("dd/MM/yyyy HH:mm").format(new DateTime.now()).toString(),
                         "order_id" : box.read("user")["first_name"][0] + new DateFormat("ddHHss").format(new DateTime.now()).toString()
 
                       };
                       print(_order_data);
 
                       Database.addOrder(_order_data);
+       Database.getOwnerToken( stall_data["shop_id"],"New Order", "Your got new order");
+
                     },
                     child: Text(
                       "Add Order",

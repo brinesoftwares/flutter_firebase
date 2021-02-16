@@ -2,7 +2,9 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_starter/pages/user/user_order_success.dart';
+import 'package:flutter_starter/services/api_services/fireDB.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class SaleInfo extends StatefulWidget {
   @override
@@ -10,51 +12,47 @@ class SaleInfo extends StatefulWidget {
 }
 
 class _SaleInfoState extends State<SaleInfo> {
-  List foods = [
-    {
-      "food": "Burger",
-      "price": 5.6,
-      "describtion": "This is the veg burger",
-      "imag":
-          "https://media.cntraveler.com/photos/58f8eefed3e4d55528e77660/16:9/w_2560%2Cc_limit/GettyImages-588348686.jpg"
-    },
-    {
-      "food": "Pizza",
-      "price": 2.8,
-      "describtion": "This is the veg Pizza",
-      "imag": "https://i.ytimg.com/vi/EK-zTchrRvA/hqdefault.jpg"
-    },
-    {
-      "food": "Pepsi",
-      "price": 1.8,
-      "describtion": "This is the pepsi",
-      "imag":
-          "https://thumbs.dreamstime.com/z/food-stall-street-yellow-red-seat-putting-enjoying-open-air-meal-31363276.jpg"
-    },
-  ];
-  bool _loading = false;
-  int selectedRadioTile = 0;
-
-  int qty = 1;
-
-  var product_url =
-      "https://s3.eu-west-2.amazonaws.com/www.grocy.shop/products/images/3f6ec1e6-f062-42f8-ac38-67d2dc87e031.jpg";
-  List my_cart = [];
-
+  bool _loading = true;
+  double today_income = 0;
+  double month_income = 0;
+  double overall_income = 0;
   @override
   void initState() {
     super.initState();
-    // fetchShops();
+    fetchSales();
   }
 
-  // void fetchShops() async {
-  //   await ApiService().fetchAllShop().then((value) {
-  //     setState(() {
-  //       _loading = false;
-  //       shops = value;
-  //     });
-  //   });
-  // }
+  void fetchSales() async {
+    await Database.fetchSales().then((value) {
+     
+
+      var temp_today = value.where((e) =>
+        e["date"].toString().contains(new DateFormat("dd/MM/yyyy").format(new DateTime.now()).toString()) )
+        ?.map((e) => double.parse(e["total"] ))
+        ?.toList();
+
+        // print(temp_today);
+
+      var temp_month = value.where((e) =>
+        e["date"].toString().contains(new DateFormat("MM/yyyy").format(new DateTime.now()).toString()))
+        .map((e) => double.parse(e["total"]))
+        .toList();
+
+      var temp_all = value.where((e) =>
+        e["date"].toString().contains(new DateFormat("yyyy").format(new DateTime.now()).toString()))
+        .map((e) => double.parse(e["total"]))
+        .toList();
+
+        setState(() {
+          _loading = false;
+          today_income = temp_today.length == 0 ? 0 : temp_today.reduce((double sum, element) => sum + element);
+          month_income = temp_month.length == 0 ? 0 : temp_month.reduce((double sum, element) => sum + element);
+          overall_income = temp_all.length == 0 ? 0 : temp_all.reduce((double sum, element) => sum + element);
+        });
+
+     
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,79 +66,174 @@ class _SaleInfoState extends State<SaleInfo> {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: SingleChildScrollView(
-                  child: Column(children: [
-            SizedBox(
-              height: 40,
-            ),
-            ZoomIn(
-                          child: Container(
-                width: 280,
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5.0),
-                  border: new Border.all(
-                    color: Colors.grey[700],
-                    width: 0.8,
+          child: _loading
+              ? Center(
+                  child: SizedBox(
+                    height: 30,
+                    child: SpinKitThreeBounce(
+                      color: Colors.green,
+                      size: 25.0,
+                    ),
                   ),
-                ),
-                child: Column(
+                )
+              : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      "Today's Total Sale ",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 22, color: Colors.black),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      "RM 234.54",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber[900]),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 30,
-            ),
-            ListView.builder(
-              itemCount: foods.length,
-              physics: ScrollPhysics(),
-              shrinkWrap: true,
-              itemBuilder: (context, i) {
-                return SlideInDown(
-                    delay: Duration(milliseconds: 150 * i),
-                    child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              foods[i]["food"],
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 20, color: Colors.black),
+                      SizedBox(
+                        height: 80,
+                      ),
+                      ZoomIn(
+                        child: Center(
+                          child: Container(
+                            width: 280,
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5.0),
+                              border: new Border.all(
+                                color: Colors.grey[700],
+                                width: 0.8,
+                              ),
                             ),
-                            Text(
-                              "RM " + (foods[i]["price"] * 4).toString(),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.brown[600]),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Today's Total Sale ",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      fontSize: 22, color: Colors.black),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  "RM ${today_income}",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.amber[900]),
+                                ),
+                              ],
                             ),
-                          ],
-                        )));
-              },
-            ),
-          ]),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 50,
+                      ),
+                      ZoomIn(
+                        child: Container(
+                          width: 280,
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5.0),
+                            border: new Border.all(
+                              color: Colors.grey[700],
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "This Month's Sale ",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: 22, color: Colors.black),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                "RM ${month_income}",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.pink[900]),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 50,
+                      ),
+                      ZoomIn(
+                        child: Container(
+                          width: 280,
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5.0),
+                            border: new Border.all(
+                              color: Colors.grey[700],
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Overall Sale ",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: 22, color: Colors.black),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                "RM ${overall_income}",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red[900]),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 50,
+                      ),
+
+                      // ListView.builder(
+                      //   itemCount: foods.length,
+                      //   physics: ScrollPhysics(),
+                      //   shrinkWrap: true,
+                      //   itemBuilder: (context, i) {
+                      //     return SlideInDown(
+                      //         delay: Duration(milliseconds: 150 * i),
+                      //         child: Padding(
+                      //             padding: const EdgeInsets.all(8.0),
+                      //             child: Row(
+                      //               mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      //               crossAxisAlignment: CrossAxisAlignment.start,
+                      //               children: [
+                      //                 Text(
+                      //                   foods[i]["food"],
+                      //                   textAlign: TextAlign.center,
+                      //                   style: TextStyle(fontSize: 20, color: Colors.black),
+                      //                 ),
+                      //                 Text(
+                      //                   "RM " + (foods[i]["price"] * 4).toString(),
+                      //                   textAlign: TextAlign.center,
+                      //                   style: TextStyle(
+                      //                       fontSize: 20,
+                      //                       fontWeight: FontWeight.bold,
+                      //                       color: Colors.brown[600]),
+                      //                 ),
+                      //               ],
+                      //             )));
+                      //   },
+                      // ),
+                    ]),
         ),
       ),
     );
