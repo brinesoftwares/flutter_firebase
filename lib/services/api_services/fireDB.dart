@@ -99,7 +99,9 @@ class Database {
     if (data.documents.length == 1) {
       box.write('user', data.documents[0].data);
       box.write('my_id', data.documents[0].documentID);
-      Get.to(UserDashboard());
+      box.write("isOwner", false);
+
+      Get.offAll(UserDashboard());
     } else {
       failure_msg("Invalide Email/Password", "Try again");
     }
@@ -152,6 +154,7 @@ class Database {
     if (data.documents.length == 1) {
       box.write('user', data.documents[0].data);
       box.write('my_id', data.documents[0].documentID);
+      box.write("isOwner", true);
 
       Get.to(OwnerDashboard());
     } else {
@@ -404,6 +407,7 @@ class Database {
           .collection('orders')
           .where("user_id", isEqualTo: box.read("my_id"))
           .where("status", isEqualTo: status)
+
           .getDocuments();
       if (Get.isDialogOpen) {
         Get.back();
@@ -484,6 +488,7 @@ class Database {
           .collection('orders')
           .where("shop_id", isEqualTo: box.read("my_id"))
           .where("status", isEqualTo: status)
+          .orderBy("date")
           .getDocuments();
       if (Get.isDialogOpen) {
         Get.back();
@@ -666,7 +671,68 @@ class Database {
       if (Get.isDialogOpen) {
         Get.back();
       }
-     ;
+     
+    }
+
+  }
+ 
+
+  static Future userNotification() async {
+    try {
+      var data = await _db
+          .collection('orders')
+          .where("user_id", isEqualTo: box.read("my_id"))
+          .where("status",whereIn: [1,2])
+          .getDocuments();
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+
+      List filter_data = data.documents.map((e) {
+        var temp = e.data;
+        temp["_id"] = e.documentID;
+        return temp;
+      }).toList();
+
+      return filter_data;
+    } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+
+      return [];
+    }
+
+  }
+
+
+  static Future ownerNotification() async {
+    try {
+      var data = await _db
+          .collection('orders')
+          .where("shop_id", isEqualTo: box.read("my_id"))
+          .where("status", whereIn: [1,0],)
+          
+          .getDocuments();
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+
+      List filter_data = data.documents.map((e) {
+        var temp = e.data;
+        temp["_id"] = e.documentID;
+        return temp;
+      }).toList();
+
+      return filter_data;
+    } catch (e) {
+      if (Get.isDialogOpen) {
+        Get.back();
+      }
+      failure_msg("Server Error", "Try Again");
+
+      return [];
     }
 
   }

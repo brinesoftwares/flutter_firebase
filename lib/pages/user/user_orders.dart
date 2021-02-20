@@ -23,7 +23,7 @@ class _UserOrdersState extends State<UserOrders> {
   var rated_food = [];
   bool loading = true;
   List<String> _dynamicChips = [
-    'Reason 1',
+    'This is the Reason for cancel 1',
     'Reason 2',
     'Reason 3',
     'Reason 4',
@@ -621,7 +621,7 @@ class _UserOrdersState extends State<UserOrders> {
                                                     fontSize: 13,
                                                     color: Colors.brown[600])) : rated_food.contains(i)
                                 ? RatingBar.builder(
-                                    initialRating: 3,
+                                    initialRating: 0,
                                     minRating: 1,
                                     itemSize: 30,
                                     direction: Axis.horizontal,
@@ -636,6 +636,8 @@ class _UserOrdersState extends State<UserOrders> {
                                     onRatingUpdate: (rating) {
                                       print(rating.toInt());
                                       Database.updateUserRating(rating.toInt(), completed_orders[i]["_id"]);
+       Database.getOwnerToken( completed_orders[i]["shop_id"],"Got Rating", "Your got rating $rating for order ${completed_orders[i]["order_id"]}");
+                                    
                                     },
                                   )
                                 : SizedBox(
@@ -816,7 +818,7 @@ class _UserOrdersState extends State<UserOrders> {
       Database.updateUserCancel(reason,pending_orders[index]["_id"]).then((value) {
         fetchOredrs();
         reasonController.text = "";
-       Database.getUserToken(pending_orders[index]["user_id"],"Order Cancelled", "Your order (${pending_orders[index]["user_id"]}) Cancelled");
+       Database.getOwnerToken(pending_orders[index]["shop_id"],"Order Cancelled", "Your order (${pending_orders[index]["order_id"]}) Cancelled");
 
       });
 

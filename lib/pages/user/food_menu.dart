@@ -619,7 +619,7 @@ class _FoodMenuState extends State<FoodMenu> {
                       print(_order_data);
 
                       Database.addOrder(_order_data);
-       Database.getOwnerToken( stall_data["shop_id"],"New Order", "Your got new order");
+       Database.getOwnerToken( stall_data["shop_id"],"New Order", "Your got new order!");
 
                     },
                     child: Text(

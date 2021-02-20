@@ -30,7 +30,9 @@ void initState(){
       
     },
           child:SafeArea(
+            
           child: Scaffold(
+            backgroundColor: Colors.white,
               body: Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: ListView(
@@ -38,15 +40,21 @@ void initState(){
                      SizedBox(
                       height: 35,
                     ),
-                    Pulse(
-                      duration: Duration(milliseconds: 800),
+                    // Pulse(
+                    //   duration: Duration(milliseconds: 800),
 
-                                          child: Icon(
-                        Icons.check_circle,
-                        size: 200,
-                        color: Colors.green,
-                      ),
-                    ),
+                    //                       child: Icon(
+                    //     Icons.check_circle,
+                    //     size: 200,
+                    //     color: Colors.green,
+                    //   ),
+                    // ),
+
+                     Image.asset(
+                  'assets/images/cooking.gif',
+                  height: 250,
+                ),
+
                       SizedBox(
                       height: 10,
                     ),

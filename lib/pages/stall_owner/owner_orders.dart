@@ -667,7 +667,7 @@ class _OwnerOrdersState extends State<OwnerOrders> {
                                   });
                                   Database.updateOwnerAccept(pending_orders[i]["_id"]).then((value) {
                                       fetchOredrs();
-                                  Database.getUserToken(pending_orders[i]["user_id"],"Order Accepted", "Your order (${pending_orders[i]["user_id"]}) Accepted");
+                                  Database.getUserToken(pending_orders[i]["user_id"],"Order Accepted", "Your order (${pending_orders[i]["order_id"]}) Accepted");
 
                                   });
 
@@ -1184,7 +1184,7 @@ class _OwnerOrdersState extends State<OwnerOrders> {
       });
       Database.updateOwnerCancel(reason,pending_orders[index]["_id"]).then((value) {
         fetchOredrs();
-       Database.getUserToken(pending_orders[index]["user_id"],"Order Cancelled", "Your order (${pending_orders[index]["user_id"]}) Cancelled");
+       Database.getUserToken(pending_orders[index]["user_id"],"Order Cancelled", "Your order (${pending_orders[index]["order_id"]}) Cancelled");
 
         reasonController.text = "";
       });

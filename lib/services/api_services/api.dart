@@ -34,7 +34,7 @@ class ApiServices {
   "notification": {
       "title": title,
       "body": sub_title,
-      "mutable_content": true,
+      "click_action": "FLUTTER_NOTIFICATION_CLICK",
       "sound": "Tri-tone"
       },
   "to": to

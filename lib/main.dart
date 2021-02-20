@@ -5,6 +5,7 @@ import 'package:flutter_starter/pages/intro.dart';
 import 'package:flutter_starter/pages/login.dart';
 import 'package:flutter_starter/pages/sign_up_as.dart';
 import 'package:flutter_starter/pages/stall_owner/add_food.dart';
+import 'package:flutter_starter/pages/stall_owner/owner_dashboard.dart';
 import 'package:flutter_starter/pages/stall_owner/owner_food_menu.dart';
 import 'package:flutter_starter/pages/stall_owner/owner_orders.dart';
 import 'package:flutter_starter/pages/stall_owner/sale_info.dart';
@@ -18,7 +19,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:vibration/vibration.dart';
 
-void main() async{
+void main() async {
   await GetStorage.init();
   runApp(MyApp());
 }
@@ -32,50 +33,48 @@ class _MyAppState extends State<MyApp> {
   final box = GetStorage();
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
-
-  Widget goto(){
-    if(box.hasData('intro')) {
-      if(box.hasData('login')){
-        return HomePage();
+  Widget goto() {
+    if (box.hasData("isOwner")) {
+      if (box.read("isOwner")) {
+        return OwnerDashboard();
+      } else {
+        return UserDashboard();
       }
-      else{
-        return LoginPage();
-      }
-    }
-    else{
-      return Intro();
+    } else {
+      return SignUpAs();
     }
   }
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
     _firebaseMessaging.getToken().then((String token) {
       print(token);
     });
-      _firebaseMessaging.configure(
+    _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print("message");
         print(message);
         if (await Vibration.hasVibrator()) {
           Vibration.vibrate(duration: 600);
         }
-        Get.snackbar(message["notification"]["title"], message["notification"]["body"],
-        colorText: Colors.white,
-        barBlur: 100,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        dismissDirection: SnackDismissDirection.HORIZONTAL,
-        borderRadius: 8,
-        margin: EdgeInsets.all(15),
-        isDismissible: true);
+        Get.snackbar(
+            message["notification"]["title"], message["notification"]["body"],
+            colorText: Colors.white,
+            barBlur: 100,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            dismissDirection: SnackDismissDirection.HORIZONTAL,
+            borderRadius: 8,
+            margin: EdgeInsets.all(15),
+            isDismissible: true);
       },
       onLaunch: (Map<String, dynamic> message) async {
         await Get.to(box.read("isOwner") ? OwnerOrders() : UserOrders());
       },
       onResume: (Map<String, dynamic> message) async {
         await Get.to(box.read("isOwner") ? OwnerOrders() : UserOrders());
- },
+      },
     );
   }
 
@@ -88,7 +87,7 @@ class _MyAppState extends State<MyApp> {
         fontFamily: "Josefin",
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: SignUpAs(),
+      home: goto(),
       // Intro(),
       defaultTransition: Transition.native,
     );

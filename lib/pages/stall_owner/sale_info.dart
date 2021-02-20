@@ -109,7 +109,7 @@ class _SaleInfoState extends State<SaleInfo> {
                                   height: 10,
                                 ),
                                 Text(
-                                  "RM ${today_income}",
+                                  "RM ${today_income.toStringAsFixed(2)}",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontSize: 40,
@@ -149,7 +149,7 @@ class _SaleInfoState extends State<SaleInfo> {
                                 height: 10,
                               ),
                               Text(
-                                "RM ${month_income}",
+                                "RM ${month_income.toStringAsFixed(2)}",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontSize: 40,
@@ -188,7 +188,7 @@ class _SaleInfoState extends State<SaleInfo> {
                                 height: 10,
                               ),
                               Text(
-                                "RM ${overall_income}",
+                                "RM ${overall_income.toStringAsFixed(2)}",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontSize: 40,

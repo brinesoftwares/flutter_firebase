@@ -51,7 +51,6 @@ class _SignUpAsState extends State<SignUpAs> {
               FadeInLeft(
                 child: InkWell(
                   onTap: () {
-                    GetStorage().write("isOwner", false);
                     Get.to(UserLogin());
                   },
                   child: Column(
@@ -86,8 +85,6 @@ class _SignUpAsState extends State<SignUpAs> {
               FadeInRight(
                 child: InkWell(
                   onTap: (){
-                    GetStorage().write("isOwner", true);
-
                     Get.to(OwnerLogin());
                   },
                                   child: Column(
