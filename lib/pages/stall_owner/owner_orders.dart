@@ -1001,8 +1001,9 @@ class _OwnerOrdersState extends State<OwnerOrders> {
                         ),
                         Center(
                             child:completed_orders[i]["review"] > 0 ?  RatingBar.builder(
-                                    initialRating: 3,
+                                    initialRating: completed_orders[i]["review"] +.0,
                                     minRating: 1,
+                                    ignoreGestures: true,
                                     itemSize: 30,
                                     direction: Axis.horizontal,
                                     allowHalfRating: false,

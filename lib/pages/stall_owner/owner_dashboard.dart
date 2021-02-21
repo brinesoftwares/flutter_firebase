@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_starter/pages/sign_up_as.dart';
 import 'package:flutter_starter/pages/stall_owner/owner_food_menu.dart';
 import 'package:flutter_starter/pages/stall_owner/owner_notification.dart';
 import 'package:flutter_starter/pages/stall_owner/owner_orders.dart';
@@ -238,7 +239,32 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
                   ),
                 ],
               ),
-            ],
+            
+             SizedBox(
+                height: 40,
+              ),
+              Align(
+                          alignment: Alignment.center,
+                          child: SizedBox(
+                            height: 35,
+                            width: 180,
+                            child: RaisedButton(
+                              color: Colors.pink,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              onPressed: () {
+                                Get.offAll(SignUpAs());
+                                box.erase();
+                              },
+                              child: Text(
+                                "Logout",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                                  
+                            ],
           ),
         ),
       ),

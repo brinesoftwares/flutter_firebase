@@ -488,7 +488,6 @@ class Database {
           .collection('orders')
           .where("shop_id", isEqualTo: box.read("my_id"))
           .where("status", isEqualTo: status)
-          .orderBy("date")
           .getDocuments();
       if (Get.isDialogOpen) {
         Get.back();
