@@ -267,7 +267,7 @@ class _FoodMenuState extends State<FoodMenu> {
                                                           const EdgeInsets.only(
                                                               top: 9),
                                                       child: Text(
-                                                        "RM ${foods[i]["price"]}",
+                                                        "RM ${foods[i]["price"].toStringAsFixed(2)}",
                                                         style: TextStyle(
                                                             fontSize: 13,
                                                             fontWeight:

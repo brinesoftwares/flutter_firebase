@@ -600,7 +600,7 @@ class _OwnerOrdersState extends State<OwnerOrders> {
                                           Expanded(
                                               flex: 2,
                                               child: Text(
-                                                  "${pending_orders[i]['foods'][_i]['qty']} X RM ${pending_orders[i]['foods'][_i]['price']}",
+                                                  "${pending_orders[i]['foods'][_i]['qty']} X RM ${pending_orders[i]['foods'][_i]['price'].toStringAsFixed(2)}",
                                                   style: TextStyle(
                                                       fontSize: 10,
                                                       color:
@@ -800,7 +800,7 @@ class _OwnerOrdersState extends State<OwnerOrders> {
                                     Expanded(
                                         flex: 2,
                                         child: Text(
-                                            "${cancelled_orders[i]['foods'][_i]['qty']} X RM ${cancelled_orders[i]['foods'][_i]['price']}",
+                                            "${cancelled_orders[i]['foods'][_i]['qty']} X RM ${cancelled_orders[i]['foods'][_i]['price'].toStringAsFixed(2)}",
                                             style: TextStyle(
                                                 fontSize: 10,
                                                 color: Colors.grey[800]))),
@@ -968,7 +968,7 @@ class _OwnerOrdersState extends State<OwnerOrders> {
                                     Expanded(
                                         flex: 2,
                                         child: Text(
-                                            "${completed_orders[i]['foods'][_i]['qty']} X RM ${completed_orders[i]['foods'][_i]['price']}",
+                                            "${completed_orders[i]['foods'][_i]['qty']} X RM ${completed_orders[i]['foods'][_i]['price'].toStringAsFixed(2)}",
                                             style: TextStyle(
                                                 fontSize: 10,
                                                 color: Colors.grey[800]))),

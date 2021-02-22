@@ -120,7 +120,7 @@ class _OrderConfirmState extends State<OrderConfirm> {
                           // orderInfo("Payment Method",
                           //     orderDetails["paymentMethod"]),
                           // orderInfo("Shopping Method", ""),
-                          orderInfo("Total Price", "RM ${data[1]}"),
+                          orderInfo("Total Price", "RM ${data[1].toStringAsFixed(2)}"),
                           orderInfo("Ordered Date", data[2]),
 
                           SizedBox(
